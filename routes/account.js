@@ -26,7 +26,7 @@ router.post('/signup', async (req, res, next)=> {
                 if(err) reject(err);
                 try {
                     await db.executePreparedStatement("INSERT INTO account(id, password, Devtoken,salt) values(?, ?, ?, ?)",
-                    [req.body.id, req.body.password, req.body.Devtoken, salt]);
+                    [req.body.id, key.toString('base64'), req.body.Devtoken, salt]);
                 } catch (error) {
                     reject(error);   
                 }
