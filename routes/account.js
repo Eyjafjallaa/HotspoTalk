@@ -4,6 +4,8 @@ var db = require('../model/db');
 var jwt = require('jsonwebtoken')
 const crypto = require('crypto');
 const secret = require('../config/tokenkey')
+const bkdf2Password = require('pbkdf2-password');
+const hasher = bkdf2Password();
 
 /* GET users listing. */
 router.post('/signup', function(req, res, next) {
