@@ -11,9 +11,11 @@ const hasher = bkdf2Password();
 router.post('/signup', async (req, res, next)=> {
     var c = await db.executePreparedStatement("SELECT * from account",[]);
     console.log(c);
+    var salt = await crypto.randomBytes(64,);
+    const pw = crypto.createHash('sha512').update(post.password).digest('base64');
+    
     /*
   post = req.body;
-  const pw = crypto.createHash('sha512').update(post.password).digest('base64');
   db.query(`INSERT INTO account(id, password, Devtoken) values(?, ?, ?);`,
     [post.id, pw, post.Devtoken],
     (err, result) => {
