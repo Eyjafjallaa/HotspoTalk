@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var db = require('../model/db');
+var db = require('../config/dbconfig');
 var jwt = require('jsonwebtoken')
 const crypto = require('crypto');
 const secret = require('../config/tokenkey')
