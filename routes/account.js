@@ -3,9 +3,7 @@ var router = express.Router();
 var db = require('../model/db');
 var jwt = require('jsonwebtoken')
 const crypto = require('crypto');
-const secret = require('../config/tokenkey')
-const bkdf2Password = require('pbkdf2-password');
-const hasher = bkdf2Password();
+const secret = require('../config/tokenkey');
 
 /* GET users listing. */
 router.post('/signup', async (req, res, next)=> {
@@ -42,38 +40,49 @@ router.post('/signup', async (req, res, next)=> {
     */
 });
 
-router.post('/login', async (req, res, next) => {
-  const sql = "SELECT PW FROM Broker WHERE ID=? AND PW=?";
-  const param = [req.body.id, req.password];
-  let result = await db.executePreparedStatement(sql, param);
-  console.log(result);
 
-    // db.query(`SELECT PW FROM Broker WHERE ID=? AND PW=?`, [req.body.id, req.body.pw], (err, result) => {
-    //     if (result[0] == undefined) {
-    //         res.status(401).json({});
-    //         return;
-    //     }
-    //     if (req.body.pw == result[0].PW) {
-    //         var user = {
-    //             sub: req.body.id,
-    //             iat: new Date().getTime() / 1000
-    //         };
-    //         var token = jwt.sign(user, secret, {
-    //             expiresIn: "32H"
-    //         })
-    //         res.status(200).json({
-    //             logintoken: token,
-    //         });
-    //     }
-    // })
+router.post('/login', async (req, res, next) => {
+  const id = req.body.id;
+  const password = req.body.password;
+  
+  let sql = "SELECT salt FROM account WHERE id = ?";
+  const param = [id];
+  let result = await db.executePreparedStatement(sql, param);
+  let salt = result[0].salt;
+
+
+  
+  const idPasswordSql = async(key) => {
+    result = await db.executePreparedStatement("SELECT id, password FROM account WHERE id = ? AND password = ?", [key, id]);
+    console.log(result);
+  }
+  
+  
+  function hashPassword(salt, password) {
+    return new Promise((resolve, reject) => {
+      const iterations = 256;
+      const keylen = 64;
+      const digest = 'sha512';
+      
+      crypto.pbkdf2(password, salt, iterations, keylen, digest, (err, key) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(key.toString('base64'));
+        }
+      })
+    });
+  }
+  hashPassword(salt, password).then(idPasswordSql)
 });
 
 router.get('/:id', (req, res, next) => {
-
+  
 });
 
 router.delete('/ban', (req, res, next) => {
-    
+  
 });
 
 module.exports = router;
+            
