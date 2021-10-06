@@ -8,7 +8,10 @@ const bkdf2Password = require('pbkdf2-password');
 const hasher = bkdf2Password();
 
 /* GET users listing. */
-router.post('/signup', function(req, res, next) {
+router.post('/signup', async (req, res, next)=> {
+    var c = await db.executePreparedStatement("SELECT * from account",[]);
+    console.log(c);
+    /*
   post = req.body;
   const pw = crypto.createHash('sha512').update(post.password).digest('base64');
   db.query(`INSERT INTO account(id, password, Devtoken) values(?, ?, ?);`,
@@ -36,6 +39,7 @@ router.post('/signup', function(req, res, next) {
         logintoken: token,
       });
     })
+    */
 });
 
 router.post('/login', async (req, res, next) => {
