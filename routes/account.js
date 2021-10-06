@@ -37,8 +37,6 @@ router.post('/signup', function(req, res, next) {
 });
 
 router.post('/login', (req, res, next) => {
-    
-
     db.query(`SELECT PW FROM Broker WHERE ID=? AND PW=?`, [req.body.id, req.body.pw], (err, result) => {
         if (result[0] == undefined) {
             res.status(401).json({});
@@ -56,7 +54,6 @@ router.post('/login', (req, res, next) => {
                 logintoken: token,
             });
         }
-
     })
 });
 
