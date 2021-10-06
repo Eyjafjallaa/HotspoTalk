@@ -15,7 +15,7 @@ module.exports.executePreparedStatement = async (sql, params)=>{
             );
         return rows;
     } catch(err){
-        console.log(err);
-        return null;
+        //console.log(err);
+        throw(err);
     }
 }

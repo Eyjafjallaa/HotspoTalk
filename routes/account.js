@@ -7,37 +7,54 @@ const secret = require('../config/tokenkey');
 
 /* GET users listing. */
 router.post('/signup', async (req, res, next)=> {
-    var c = await db.executePreparedStatement("SELECT * from account",[]);
-    console.log(c);
-    /*
-  post = req.body;
-  const pw = crypto.createHash('sha512').update(post.password).digest('base64');
-  db.query(`INSERT INTO account(id, password, Devtoken) values(?, ?, ?);`,
-    [post.id, pw, post.Devtoken],
-    (err, result) => {
-      //console.log(err);
-      if(err) { 
-        console.log(err);
-        res.status(400).json(
-          {
-            errCode: err.code
-          }
-        );
-        return;
-      }
-      let user = {
-        sub: post.userid,
-        name: post.nickname,
-        iat: new Date().getTime() / 1000
-      };
-      let token = jwt.sign(user, secret, {
-        expiresIn: "32H"
-      })
-      res.status(200).json({
-        logintoken: token,
-      });
-    })
-    */
+    const saltcreate = () => {
+        const promise = new Promise((resolve, reject) => {
+            crypto.randomBytes(64, (err, buf) => {
+                if (err) reject(err)
+                else {
+                    resolve(buf.toString("base64"));
+                }
+            })
+        })
+        return promise;
+    }
+    
+    const encrypt = (salt)=>{
+        const promise = new Promise ((resolve,reject)=>{
+            console.log(salt);
+            crypto.pbkdf2(req.body.password,salt,256,64,"sha512",async (err,key)=>{
+                if(err) reject(err);
+                try {
+                    await db.executePreparedStatement("INSERT INTO account(id, password, Devtoken,salt) values(?, ?, ?, ?)",
+                    [req.body.id, req.body.password, req.body.Devtoken, salt]);
+                } catch (error) {
+                    reject(error);   
+                }
+                resolve();
+            })
+        })
+        return promise;
+    }
+
+    const respond = ()=>{
+        let user = {
+            sub: req.body.userid,
+            name: req.body.nickname,
+            iat: new Date().getTime() / 1000
+        };
+        let token = jwt.sign(user, secret, {
+            expiresIn: "32H"
+        })
+        res.status(200).json({logintoken:token});
+    }
+
+    const error = (err)=>{
+        res.status(400).json(err);
+    }
+    saltcreate()
+    .then(encrypt)
+    .then(respond)
+    .catch(error);
 });
 
 
