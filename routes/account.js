@@ -39,7 +39,6 @@ router.post('/signup', async (req, res, next)=> {
     const respond = ()=>{
         let user = {
             sub: req.body.userid,
-            name: req.body.nickname,
             iat: new Date().getTime() / 1000
         };
         let token = jwt.sign(user, secret, {
@@ -65,13 +64,35 @@ router.post('/login', async (req, res, next) => {
   let sql = "SELECT salt FROM account WHERE id = ?";
   const param = [id];
   let result = await db.executePreparedStatement(sql, param);
+  if(result.length == 0) {
+    res.status(401).json({
+      msg : "일치하는 아이디가 없습니다."
+    })
+    return;
+  }
+  
   let salt = result[0].salt;
 
 
   
   const idPasswordSql = async(key) => {
-    result = await db.executePreparedStatement("SELECT id, password FROM account WHERE id = ? AND password = ?", [key, id]);
-    console.log(result);
+    try{
+      result = await db.executePreparedStatement("SELECT id FROM account WHERE id = ? AND password = ?", [id, key]);
+      if(result.length == 0) {
+        throw({msg : "아이디와 비밀번호가 일치하지 않습니다."})
+      }
+      let user = {
+        sub: result[0].id,
+        iat: new Date().getTime() / 1000
+      };
+      let token = jwt.sign(user, secret, {
+        expiresIn: "32H"
+      })
+      res.status(201).json({logintoken:token});
+    } catch(e) {
+      console.log(e);
+      res.status(401).json(e);
+    }
   }
   
   
@@ -90,7 +111,11 @@ router.post('/login', async (req, res, next) => {
       })
     });
   }
-  hashPassword(salt, password).then(idPasswordSql)
+  hashPassword(salt, password)
+  .then(idPasswordSql)
+  .catch((err) => {
+    res.status(401).json({err});
+  })
 });
 
 router.get('/:id', (req, res, next) => {
