@@ -3,7 +3,7 @@ var router = express.Router();
 var db = require('../model/db');
 var jwt = require('jsonwebtoken')
 const crypto = require('crypto');
-const secret = require('../secret/tokenkey')
+const secret = require('../config/tokenkey')
 
 /* GET users listing. */
 router.post('/signup', function(req, res, next) {
@@ -65,7 +65,7 @@ router.get('/:id', (req, res, next) => {
 });
 
 router.delete('/ban', (req, res, next) => {
-
+    
 });
 
 module.exports = router;
