@@ -15,7 +15,11 @@ module.exports.init=(io)=>{
         });
 
         socket.on('test', (msg)=>{
+            console.log(msg);
             io.emit('test', msg);
+        })
+        socket.on('testjoin',(data)=>{
+            console.log(data);
         })
     })
 }
