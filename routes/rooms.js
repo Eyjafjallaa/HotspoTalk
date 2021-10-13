@@ -1,13 +1,68 @@
 var express = require('express');
+const decode = require('../middleware/token');
 var router = express.Router();
+var db = require('../model/db');
 
-router.post('/', (req, res)=>{
-    res.render('index');
+router.get('/', (req, res) => { //들어갈 수 있는 방 들어갔던 방
+    
 })
 
-router.get('/:roomid', (req, res) => {
 
+//longitude 경도 latitude 위도   areaType : 0 반경 1 주소 areaDetail : type이 0일때는 m / 1일 떄는 0이면 동 1이면 상위
+//35.664753, 128.422895
+router.post('/', decode, async(req, res) => {
+    try{
+        const userId = req.token.sub;
+        const body = req.body;
+        if(body.name == '' || body.name == undefined) {
+            throw "'name'이 빠졌습니다.";
+        }
+        if(body.password == '' || body.password == undefined) {
+            throw "'password'가 빠졌습니다.";
+        }
+        if(body.memberLimit == '' || body.memberLimit == undefined) {
+            throw "'memberLimit'이 빠졌습니다.";
+        }
+        if(body.latitude == '' || body.latitude == undefined) {
+            throw "'latitude'가 빠졌습니다.";
+        }
+        if(body.longitude == '' || body.longitude == undefined) {
+            throw "'longitude'가 빠졌습니다.";
+        }
+        if(body.areaType == '' || body.areaType == undefined) {
+            throw "'areaType'이 빠졌습니다.";
+        }
+        if(body.areaDetail == '' || body.areaDetail == undefined) {
+            throw "'areaDetail'이 빠졌습니다.";
+        }
+        if(body.nickName == '' || body.nickName == undefined) {
+            throw "'nickName'이 빠졌습니다.";
+        }
+
+
+        let sql = "INSERT INTO room(RoomName, RoomPW, Latitude, Longitude, MemberLimit, AreaType, AreaDetail) values(?,?,?,?,?,?,?)"
+        let param = [body.name, body.password, body.latitude, body.longitude, body.memberLimit, body.areaType, body.areaDetail];
+        const roomId = await db.executePreparedStatement(sql, param);
+    
+    
+        sql = "SELECT AccountID FROM account WHERE id = ?;"
+        let accountId = await db.executePreparedStatement(sql, [userId]);
+        accountId = accountId[0].AccountID
+        
+        sql = "INSERT INTO member(IsHead, RoomID, AccountID, NickName) values(?,?,?,?);";
+        param = [1,roomId.insertId, accountId, body.nickName];
+        await db.executePreparedStatement(sql, param);
+    
+        res.status(201).json({
+            msg : "OK"
+        });
+    }catch(e) {
+        res.status(401).json({
+            msg : e
+        })
+    }
 })
+
 
 router.get('/:roomid/user', (req, res) => {
 
@@ -31,6 +86,8 @@ router.delete('/:roomid', (req, res) => {
 
 })
 
-router.put('/:roomid/rename')
+router.put('/:roomid/rename', (req, res) => {
+
+})
 
 module.exports = router;
