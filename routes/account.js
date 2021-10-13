@@ -4,6 +4,7 @@ var db = require('../model/db');
 var jwt = require('jsonwebtoken')
 const crypto = require('crypto');
 const secret = require('../config/tokenkey');
+const encrypts= require('../config/pwKey');
 
 /* GET users listing. */
 router.post('/signup', async (req, res, next)=> {
@@ -98,11 +99,7 @@ router.post('/login', async (req, res, next) => {
   
   function hashPassword(salt, password) {
     return new Promise((resolve, reject) => {
-      const iterations = 256;
-      const keylen = 64;
-      const digest = 'sha512';
-      
-      crypto.pbkdf2(password, salt, iterations, keylen, digest, (err, key) => {
+      crypto.pbkdf2(password, salt, encrypts.iterations, encrypts.keylen,encrypts.digest, (err, key) => {
         if (err) {
           reject(err);
         } else {
@@ -118,8 +115,20 @@ router.post('/login', async (req, res, next) => {
   })
 });
 
-router.get('/:id', (req, res, next) => {
-  
+router.get('/:id', async(req, res, next) => {
+  const sql= "SELECT * FROM account WHERE id = ?";
+  const params = [req.params.id];
+  try {
+    var c =await db.executePreparedStatement(sql,params)
+    if(c.length>0){
+      res.status(400).send('이미 존재하는 아이디입니다.');
+    }
+    else{
+      res.status(200).send();
+    }
+  } catch (error) {
+    res.status(400).json(error);
+  }
 });
 
 router.delete('/ban', (req, res, next) => {
