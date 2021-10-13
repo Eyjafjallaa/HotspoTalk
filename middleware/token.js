@@ -1,6 +1,5 @@
-const secret = require('../secret/tokenkey');
+const secret = require('../config/tokenkey');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 
 const tokendecode = (req,res,next) => {
     //console.log(req.get('authorization'))
