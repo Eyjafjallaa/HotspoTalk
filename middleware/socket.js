@@ -1,3 +1,4 @@
+const { json } = require("express");
 const { Socket } = require("socket.io");
 
 
@@ -6,7 +7,9 @@ module.exports.init=(io)=>{
 
     io.on('connection',(socket)=>{
         console.log('connected');
-        io.emit('test', {msg:'Hello'})
+        io.emit('test', JSON.stringify({msg:'Hello'}))
+        io.emit('test', JSON.stringify({msg:'Hello'}))
+        io.emit('test', JSON.stringify({msg:'Hello'}))
         socket.on('disconnect',()=>{
             console.log('user disconnected');
         });
