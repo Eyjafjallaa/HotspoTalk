@@ -5,6 +5,7 @@ var jwt = require('jsonwebtoken')
 const crypto = require('crypto');
 const secret = require('../config/tokenkey');
 const encrypts= require('../config/pwKey');
+const decode = require('../middleware/token');
 
 /* GET users listing. */
 router.post('/signup', async (req, res, next)=> {
@@ -134,6 +135,13 @@ router.get('/:id', async(req, res, next) => {
 router.delete('/ban', (req, res, next) => {
   
 });
+
+
+router.put('/device', (req, res) => {
+  let devieceToken = req.deviceToken;
+
+  let sql = "UPDATE account SET DevToken = ? WHERE id = ?";
+})
 
 module.exports = router;
             
