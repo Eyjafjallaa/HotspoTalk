@@ -40,7 +40,6 @@ router.post('/', decode, async(req, res) => {
     }
 })
 
-
 router.get('/:roomid/user', (req, res) => {
 
 })
