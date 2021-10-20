@@ -22,23 +22,17 @@ module.exports.init=(io)=>{
         })
 
         socket.on('onload',(data)=>{
+            console.log(data);
             socket.join(data.room);
         })
         socket.on('onshot',(data)=>{
+            console.log(data)
             io.to(data.room).emit('testserver',{
                 nickname:data.nickname,
                 msg:data.msg
             });
         })
 
-        socket.on('testsend',(data)=>{
-            console.log(data);
-            socket.join(data.room);
-            io.to(data.room).emit('testserver',{
-                nickname:data.nickname,
-                msg:data.msg
-            });
-        })
     })
 }
 
