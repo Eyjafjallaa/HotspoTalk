@@ -46,7 +46,7 @@ router.post('/signup', async (req, res, next)=> {
         let token = jwt.sign(user, secret, {
             expiresIn: "32H"
         })
-        res.status(200).json({msg:token});
+        res.status(200).json({token:token});
     }
 
     const error = (err)=>{
