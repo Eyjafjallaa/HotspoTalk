@@ -15,7 +15,18 @@ module.exports.init=(io)=>{
         });
 
         socket.on('test', (msg)=>{
+            console.log(msg);
             io.emit('test', msg);
+        })
+        socket.on('testjoin',(data)=>{
+            console.log(data);
         })
     })
 }
+
+/*
+
+    1.방들어오기
+    2.채팅하기
+
+*/
