@@ -7,13 +7,21 @@ $(()=>{
    socket.on('testserver',(test)=>{
       console.log(test);
    });
-   
+
    $('#join').on('click',()=>{
       var room =$('#roomnum').val();
       socket.emit('onload',{
          room
       })
       console.log('joined');
+   })
+
+   $('#leave').on('click',()=>{
+      var room = $('#roomnum').val();
+      socket.emit('unload',{
+         room
+      });
+      console.log('leaved');
    })
 
    $('#submit').on('click', ()=>{
