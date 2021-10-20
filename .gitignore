@@ -5,6 +5,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+package-lock.json
+
 # Runtime data
 pids
 *.pid
@@ -74,4 +76,4 @@ typings/
 
 # FuseBox cache
 .fusebox/
-package-lock.json
+
