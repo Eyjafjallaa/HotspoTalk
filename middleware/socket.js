@@ -1,5 +1,4 @@
-const { json } = require("express");
-const { Socket } = require("socket.io");
+
 
 
 module.exports.init=(io)=>{
@@ -20,6 +19,14 @@ module.exports.init=(io)=>{
         })
         socket.on('testjoin',(data)=>{
             console.log(data);
+        })
+        socket.on('testsend',(data)=>{
+            console.log(data);
+            socket.join(data.room);
+            io.to(data.room).emit('testserver',{
+                nickname:data.nickname,
+                msg:data.msg
+            });
         })
     })
 }
