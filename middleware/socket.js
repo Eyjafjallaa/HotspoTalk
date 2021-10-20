@@ -20,7 +20,17 @@ module.exports.init=(io)=>{
         socket.on('testjoin',(data)=>{
             console.log(data);
         })
-        
+
+        socket.on('onload',(data)=>{
+            socket.join(data.room);
+        })
+        socket.on('onshot',(data)=>{
+            io.to(data.room).emit('testserver',{
+                nickname:data.nickname,
+                msg:data.msg
+            });
+        })
+
         socket.on('testsend',(data)=>{
             console.log(data);
             socket.join(data.room);
