@@ -46,7 +46,7 @@ router.post('/signup', async (req, res, next)=> {
         let token = jwt.sign(user, secret, {
             expiresIn: "32H"
         })
-        res.status(200).json({logintoken:token});
+        res.status(200).json({msg:token});
     }
 
     const error = (err)=>{
@@ -90,7 +90,7 @@ router.post('/login', async (req, res, next) => {
       let token = jwt.sign(user, secret, {
         expiresIn: "32H"
       })
-      res.status(201).json({logintoken:token});
+      res.status(201).json({msg:token});
     } catch(e) {
       console.log(e);
       res.status(401).json(e);
@@ -122,10 +122,10 @@ router.get('/:id', async(req, res, next) => {
   try {
     var c =await db.executePreparedStatement(sql,params)
     if(c.length>0){
-      res.status(400).send('이미 존재하는 아이디입니다.');
+      res.status(400).json({msg:'이미 존재하는 아이디입니다.'});
     }
     else{
-      res.status(200).send();
+      res.status(200).json();
     }
   } catch (error) {
     res.status(400).json(error);
