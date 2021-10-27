@@ -1,5 +1,5 @@
 
-
+const db = require('../model/db');
 
 module.exports.init=(io)=>{
     console.log('Init socket.io');
@@ -18,6 +18,13 @@ module.exports.init=(io)=>{
         })
         socket.on('testjoin',(data)=>{
             console.log(data);
+        })
+
+        socket.on('message',async (data)=>{
+            let sql="INSERT INTO chatting (content, RoomID, MemberID,Timestamp) VALUES(?,?,?,?)"
+            let params=[data.content,data.RoomID,data.MemberID ,data.timestamp];
+            await db.executePreparedStatement(sql,params);
+            
         })
 
         socket.on('onload',(data)=>{
