@@ -24,12 +24,20 @@ module.exports.init=(io)=>{
             
             let sql="INSERT INTO chatting (content, RoomID, MemberID,Timestamp) VALUES(?,?,?,?)"
             let params=[data.content,data.RoomID,data.MemberID ,data.timestamp];
-            const field=  db.executePreparedStatement(sql,params).
+            const field= await(db.executePreparedStatement(sql,params).rows);
+            console.log(field);
             io.to(data.RoomID).emit('message',{
                 content:data.content,
-
+                RoomID:data.RoomID,
+                MemberID:data.MemberID,
+                timestamp:data.timestamp,
+                messageID:field.insertedID
             })
-            //이후 푸쉬
+            //이후 푸쉬 및 재확인
+        })
+
+        socket.on('ban',(data)=>{
+            
         })
 
         socket.on('onload',(data)=>{
