@@ -21,10 +21,15 @@ module.exports.init=(io)=>{
         })
 
         socket.on('message',async (data)=>{
+            
             let sql="INSERT INTO chatting (content, RoomID, MemberID,Timestamp) VALUES(?,?,?,?)"
             let params=[data.content,data.RoomID,data.MemberID ,data.timestamp];
-            await db.executePreparedStatement(sql,params);
-            
+            const field=  db.executePreparedStatement(sql,params).
+            io.to(data.RoomID).emit('message',{
+                content:data.content,
+
+            })
+            //이후 푸쉬
         })
 
         socket.on('onload',(data)=>{
