@@ -3,8 +3,26 @@ const decode = require('../middleware/token');
 var router = express.Router();
 const insertBodyCheck = require('../check/insertBodyCheck');
 var db = require('../model/db');
+const oneMeter = require('../config/distantConfig')
 
-router.get('/', (req, res) => { //들어갈 수 있는 방 들어갔던 방
+router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어갔던 방    
+    
+    let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
+    let area = await db.executePreparedStatement(sql);
+
+    let result = [];
+    for(i in area) {
+        let param 
+    }
+
+    let latitude = req.body.Latitude;
+    let longitude = req.body.Longitude;
+    const param =[latitude + oneMeter*100,];
+    sql = `SELECT * FROM hotsix.room WHERE 
+    Latitude < (35.664753 + 0.00001) AND Latitude > (35.664753 - 0.00001) AND
+    Longitude < (128.422895 + 0.00001) AND Longitude > (128.422895 - 0.00001);`;
+    
+    
     
 })
 

@@ -2,9 +2,6 @@ exports.check = (body) => {
     if(body.name == '' || body.name == undefined) {
         throw "'name'이 빠졌습니다.";
     }
-    if(body.password == '' || body.password == undefined) {
-        throw "'password'가 빠졌습니다.";
-    }
     if(body.memberLimit == '' || body.memberLimit == undefined) {
         throw "'memberLimit'이 빠졌습니다.";
     }

@@ -12,18 +12,25 @@ admin.initializeApp({
 router.get('/', (req, res) => {
     let title = req.query.title;
     let body = req.query.body;
-
+    let roomId = req.query.roomId;
+    //방번호 디바이스 토큰 메시지
     let target_token =`c1WsZgRXSOWvpJ6QH6uC4f:APA91bGz_Llh3omNiwycIgTFa_stjS5jOkVM-blGRg1x1OS2waxlcOVpmsO21DoNXUDGrg7QAJE1F46n24rqocGjwmImM_UJOoRxITKEhuuOnbH9jKilO6C-egvPFsackVlkP9Q_e85O`
-	//target_token은 푸시 메시지를 받을 디바이스의 토큰값입니다
+  	//target_token은 푸시 메시지를 받을 디바이스의 토큰값입니다
 
-  let message = {
+  let message = { //넣어야할 내용 : 시간 보낸사람 내용 방번호
     notification: {
       title: title,
-      body: body
+      message: body,
+      roomId : roomId
+    },
+    data: {
+      title : title,
+      message: body,
+      roomId : roomId
     },
     token: target_token,
   }
-
+  console.log(message);
   admin
     .messaging()
     .send(message)
