@@ -6,23 +6,46 @@ var db = require('../model/db');
 const oneMeter = require('../config/distantConfig')
 
 router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어갔던 방    
+    try {
+        let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
+        let area = await db.executePreparedStatement(sql);
     
-    let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
-    let area = await db.executePreparedStatement(sql);
+        let result = [];
+        let latitude =  parseFloat(req.query.latitude);
+        let longitude = parseFloat(req.query.longitude);
+        for(i in area) {
+            let param =[
+                latitude, oneMeter*area[i].AreaDetail, 
+                latitude, oneMeter*area[i].AreaDetail, 
+                longitude, oneMeter*area[i].AreaDetail, 
+                longitude, oneMeter*area[i].AreaDetail
+            ];
+            sql = `SELECT * FROM hotsix.room WHERE 
+            Latitude < (? + ?) AND Latitude > (? - ?) AND
+            Longitude < (? + ?) AND Longitude > (? - ?);`;
+            
+            let rs = await db.executePreparedStatement(sql, param);
+            for(a in rs) {
+                result.push({
+                    roomID : rs[a].RoomID,
+                    roomName : rs[a].RoomName,
+                    memberLimit : rs[a].MemberLimit,
+                    roomRange : rs[a].AreaDetail
+                })
+            }
+        }
+        if(result.length == 0) {
+            throw "검색된 방이 없습니다.";
+        }
+        let nonDuplicatedResult = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
+        res.status(200).json(nonDuplicatedResult);
 
-    let result = [];
-    for(i in area) {
-        let param 
+    } catch (e) {
+        console.log(e);
+        res.status(400).json({
+            msg : e
+        })
     }
-
-    let latitude = req.body.Latitude;
-    let longitude = req.body.Longitude;
-    const param =[latitude + oneMeter*100,];
-    sql = `SELECT * FROM hotsix.room WHERE 
-    Latitude < (35.664753 + 0.00001) AND Latitude > (35.664753 - 0.00001) AND
-    Longitude < (128.422895 + 0.00001) AND Longitude > (128.422895 - 0.00001);`;
-    
-    
     
 })
 
