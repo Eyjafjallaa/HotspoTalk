@@ -20,6 +20,8 @@ module.exports.init=(io)=>{
             console.log(data);
         })
 
+        
+
         socket.on('message',async (data)=>{
             
             let sql="INSERT INTO chatting (content, RoomID, MemberID,Timestamp) VALUES(?,?,?,?)"
