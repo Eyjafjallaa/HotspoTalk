@@ -35,6 +35,7 @@ module.exports.init=(io)=>{
                 timestamp:data.timestamp,
                 messageID:field.insertedID
             })
+            //셀렉트로 전체 찾아서 푸쉬
             //이후 푸쉬 및 재확인
         })
 
