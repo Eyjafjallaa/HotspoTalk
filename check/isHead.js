@@ -1,6 +1,6 @@
 const db = require('../model/db');
 
-exports.cheack = async(roomId, userId) => {
+exports.check = async(roomId, userId) => {
     let sql = `SELECT member.IsHead FROM member JOIN account ON member.AccountID = account.AccountID WHERE account.id = ? AND member.RoomID = ?;`
     let param = [userId, roomId];
 
