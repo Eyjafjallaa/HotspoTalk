@@ -183,6 +183,7 @@ router.get('/:roomid/member', async(req, res) => { //멤버 목록
         })
     }
 })
+
 router.delete('/:roomid/exit', decode,(req, res) => { //퇴장
     try {
         const userId = req.token.sub;
