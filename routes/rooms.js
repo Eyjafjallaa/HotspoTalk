@@ -6,6 +6,7 @@ var db = require('../model/db');
 const oneMeter = require('../config/distantConfig');
 const fcm = require('../middleware/fcm');
 const isHead = require('../check/isHead');
+const existUser = require('../check/existUser');
 
 router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어갔던 방
     if(Object.keys(req.query).length === 0 && req.query.constructor === Object) { //파라미터가 없을 경우 -> 들어갔던 방
@@ -130,6 +131,9 @@ router.post('/:roomid', decode, async(req, res) => { //방 입장
         let sql = "SELECT RoomPW FROM room WHERE RoomID = ?";
         let param = [roomId];
         let existPW = await db.executePreparedStatement(sql, param);
+        if(existPW.length == 0) {
+            throw "방아이디와 일치하는 방이 없습니다.";
+        }
         if(existPW[0].RoomPW !== '') {
             let sql =  `SELECT count(*) AS len FROM room WHERE RoomID = ? AND RoomPW = ?`;
             let param = [roomId, password];
@@ -143,7 +147,7 @@ router.post('/:roomid', decode, async(req, res) => { //방 입장
         sql = "INSERT INTO member(isHead, RoomID, AccountID, NickName) VALUES(0, ?, (SELECT AccountID FROM account WHERE id = ?), ?)";
         param = [roomId, userId, nickname];
         await db.executePreparedStatement(sql, param);
-        fcm.send("HostpoTalk", nickname + "님이 입장하셨습니다.", roomId);
+        // await fcm.send("HostpoTalk", nickname + "님이 입장하셨습니다.", roomId);
         res.status(200).json({
             msg : "OK"
         })
@@ -160,7 +164,7 @@ router.get('/:roomid/member', async(req, res) => { //멤버 목록
     try {
         const roomId = req.params.roomid;
     
-        let sql = `SELECT account.id, member.nickName, member.IsHead FROM member JOIN account ON account.AccountID = member.AccountID WHERE member.RoomID = 63;`;
+        let sql = `SELECT account.id, member.nickName, member.IsHead FROM member JOIN account ON account.AccountID = member.AccountID WHERE member.RoomID = ?;`;
         let param = [roomId];
     
         let result = await db.executePreparedStatement(sql, param);
@@ -207,15 +211,39 @@ router.put('/:roomid/edit', decode, async(req, res) => {
         res.status(201).json({
             msg : "OK"
         })
-    } catch(e) {
+       } catch(e) {
         res.status(401).json({
             msg : e
         })
     }
 })
 
-router.put('/:roomid/inherit', (req, res) => {
+router.put('/:roomid/inherit', decode, async(req, res) => {
+    try {
+        const roomId = req.params.roomid;
+        const userId = req.token.sub;
+        const target = req.body.accountId;
 
+        await isHead.cheack(roomId, userId);
+        await existUser.check(target);
+
+        let sql = `UPDATE member SET IsHead = 1 WHERE RoomID = ? AND AccountID = (SELECT AccountID FROM account WHERE id = ?)`; //일반 -> 방장
+        let param = [roomId, target];
+
+        await db.executePreparedStatement(sql, param);
+        sql = `UPDATE member SET IsHEad = 0 WHERE RoomID = ? AND AccountID = (SELECT AccountID FROM account WHERE id = ?)`; //일반 -> 방장
+        param = [roomId, userId];
+
+        await db.executePreparedStatement(sql, param);
+
+        res.status(200).json({
+            msg : "OK"
+        })
+    } catch(e) {
+        res.status(400).json({
+            msg : e
+        })
+    }
 })
 
 router.delete('/:roomid', (req, res) => {
