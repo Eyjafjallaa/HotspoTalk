@@ -7,6 +7,7 @@ const oneMeter = require('../config/distantConfig');
 const fcm = require('../middleware/fcm');
 const isHead = require('../check/isHead');
 const existUser = require('../check/existUser');
+const isBaned = require('../check/isBaned')
 
 router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어갔던 방
     if(Object.keys(req.query).length === 0 && req.query.constructor === Object) { //파라미터가 없을 경우 -> 들어갔던 방
@@ -98,7 +99,6 @@ router.post('/', decode, async(req, res) => {
         const userId = req.token.sub;
         const body = req.body;
         insertBodyCheck.check(body);
-
         let sql = "INSERT INTO room(RoomName, RoomPW, Latitude, Longitude, MemberLimit, AreaType, AreaDetail) values(?,?,?,?,?,?,?)"
         let param = [body.name, body.password, body.latitude, body.longitude, body.memberLimit, body.areaType, body.areaDetail];
         const roomId = await db.executePreparedStatement(sql, param);
@@ -127,6 +127,8 @@ router.post('/:roomid', decode, async(req, res) => { //방 입장
         let roomId = req.params.roomid;
         let userId = req.token.sub;
         let { nickname, password } = req.body;
+
+        await isBaned.check(roomId, userId);
 
         let sql = "SELECT RoomPW FROM room WHERE RoomID = ?";
         let param = [roomId];
@@ -183,12 +185,17 @@ router.get('/:roomid/member', async(req, res) => { //멤버 목록
         })
     }
 })
-router.delete('/:roomid/exit', decode,(req, res) => { //퇴장
+router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
     try {
         const userId = req.token.sub;
         const roomId = req.params.roomid;
+        let sql = `DELETE FROM member WHERE AccountID = (SELECT AccountID FROM account WHERE id = ?) AND RoomID = ?`;
+        let param = [userId, roomId];
 
-        let sql = `DELETE FROM member `
+        await db.executePreparedStatement(sql, param);
+        res.status(200).json({
+            msg : "OK"
+        })
     } catch(e) {
         res.status(401).json({
             msg : e
@@ -201,7 +208,7 @@ router.put('/:roomid/edit', decode, async(req, res) => {
         const roomId = req.params.roomid;
         const userId = req.token.sub;
         const body = req.body;
-        await isHead.cheack(roomId, userId);
+        await isHead.check(roomId, userId);
         
         let sql = "UPDATE room SET RoomName = ?, RoomPW = ?, MemberLimit = ?, AreaDetail = ? WHERE RoomID = ?";
         let param = [body.name, body.password, body.memberLimit, body.roomRange, roomId];
@@ -246,8 +253,23 @@ router.put('/:roomid/inherit', decode, async(req, res) => {
     }
 })
 
-router.delete('/:roomid', (req, res) => {
+router.delete('/:roomid', decode, async(req, res) => {
+    try {
+        const roomId = req.params.roomid;
+        const userId = req.token.sub;
+        await isHead.check(roomId,userId);
 
+        let sql = `DELETE FROM room WHERE RoomID = ?`;
+        let param = [roomId];
+        await db.executePreparedStatement(sql, param);
+        res.status(201).json({
+            msg : "OK"
+        })
+    } catch(e) {
+        res.status(401).json({
+            msg : e
+        })
+    }
 })
 
 router.put('/:roomid/rename', decode, async(req, res) => {
@@ -258,6 +280,30 @@ router.put('/:roomid/rename', decode, async(req, res) => {
         let sql = `UPDATE member SET NickName = ? WHERE RoomID = ? AND AccountID = (SELECT AccountID FROM account WHERE id = ?)`;
         let param = [nickName, roomId, userId];
 
+        await db.executePreparedStatement(sql, param);
+
+        res.status(201).json({
+            msg : "OK"
+        })
+    } catch(e) {
+        res.status(401).json({
+            msg : e
+        })
+    }
+})
+
+router.put('/ban', decode, async(req, res) => {
+    try {
+        const master = req.token.sub;
+        const { accountId, roomId } = req.body;
+        await isHead.check(roomId, master);
+
+        let sql = `INSERT INTO ban(AccountId, RoomID) VALUES((SELECT AccountID FROM account WHERE id = ?), ?)`;
+        let param = [accountId, roomId];
+        await db.executePreparedStatement(sql, param);
+
+        sql = `DELETE FROM member WHERE AccountID = (SELECT AccountId FROM account WHERE id = ?) AND RoomID = ?`;
+        param = [accountId, roomId];
         await db.executePreparedStatement(sql, param);
 
         res.status(201).json({
