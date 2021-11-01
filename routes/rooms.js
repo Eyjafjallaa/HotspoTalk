@@ -185,7 +185,6 @@ router.get('/:roomid/member', async(req, res) => { //멤버 목록
         })
     }
 })
-
 router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
     try {
         const userId = req.token.sub;
@@ -312,6 +311,38 @@ router.put('/ban', decode, async(req, res) => {
         })
     } catch(e) {
         res.status(401).json({
+            msg : e
+        })
+    }
+})
+
+router.get('/:roomId', async(req, res) => {
+    try {
+        const roomId = req.params.roomId;
+        const {start, count} = req.query;
+    
+        let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp
+        FROM chatting 
+        left JOIN member ON chatting.MemberID = member.MemberID 
+        WHERE chatting.RoomID = ?
+        ORDER BY Timestamp 
+        LIMIT ?, ?;`
+    
+        let param = [roomId, start, count];
+
+        let result = await db.executePreparedStatement(sql, param);
+        let arr = [];
+        for(i of result) {
+            arr.push({
+                nickName : i.NickName,
+                content : i.content,
+                timeStamp : i.TimeStamp
+            })
+        }
+
+        res.status(200).json(arr);
+    } catch (e) {
+        res.status(400).json({
             msg : e
         })
     }
