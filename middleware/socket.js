@@ -42,8 +42,8 @@ module.exports.init=(io)=>{
             
         })
 
-        socket.on('onload',(data)=>{
-            socket.join(data.room);
+        socket.on('in',(data)=>{
+            
         })
         socket.on('unload',(data)=>{
             socket.leave(data.room);
