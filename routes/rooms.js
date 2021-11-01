@@ -250,8 +250,24 @@ router.delete('/:roomid', (req, res) => {
 
 })
 
-router.put('/:roomid/rename', (req, res) => {
+router.put('/:roomid/rename', decode, async(req, res) => {
+    try{
+        const roomId = req.params.roomid;
+        const userId = req.token.sub;
+        const nickName = req.body.nickName;
+        let sql = `UPDATE member SET NickName = ? WHERE RoomID = ? AND AccountID = (SELECT AccountID FROM account WHERE id = ?)`;
+        let param = [nickName, roomId, userId];
 
+        await db.executePreparedStatement(sql, param);
+
+        res.status(201).json({
+            msg : "OK"
+        })
+    } catch(e) {
+        res.status(401).json({
+            msg : e
+        })
+    }
 })
 
 module.exports = router;
