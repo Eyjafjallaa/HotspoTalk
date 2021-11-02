@@ -28,8 +28,8 @@ module.exports.init=(io)=>{
 
         socket.on('message',async (data)=>{
             
-            let sql="INSERT INTO chatting (content, RoomID, MemberID,Timestamp) VALUES(?,?,?,?)"
-            let params=[data.content,data.RoomID,data.MemberID ,data.timestamp];
+            let sql="INSERT INTO chatting (content, RoomID, MemberID) VALUES(?,?,?)"
+            let params=[data.content,data.RoomID,data.MemberID ];
             const field= await(db.executePreparedStatement(sql,params).rows);
             console.log(field);
             io.to(data.RoomID).emit('message',{
