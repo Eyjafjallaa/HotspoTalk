@@ -79,7 +79,7 @@ module.exports.init=(io)=>{
                     msg:"ok"
                 })
                 io.to(roomId).emit('everyin',{
-                    {msg:"누구누구님이 입장하셨습니다."}
+                    msg:"누구누구님이 입장하셨습니다."
                 })
             } catch(e) {
                 console.log(e);
