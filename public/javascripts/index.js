@@ -4,8 +4,8 @@ $(()=>{
       console.log(msg) 
    });
 
-   socket.on('testserver',(test)=>{
-      console.log(test);
+   socket.on('testserver',(data)=>{
+      console.log(data);
    });
 
    $('#join').on('click',()=>{
