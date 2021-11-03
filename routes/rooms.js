@@ -1,5 +1,6 @@
 var express = require('express');
 const decode = require('../middleware/token');
+const request = require('request')
 var router = express.Router();
 const insertBodyCheck = require('../check/insertBodyCheck');
 var db = require('../model/db');
@@ -50,10 +51,10 @@ router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어�
         try {
             let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
             let area = await db.executePreparedStatement(sql);
-        
             let result = [];
             let latitude =  parseFloat(req.query.latitude);
             let longitude = parseFloat(req.query.longitude);
+
             for(i in area) {
                 let param =[
                     latitude, oneMeter*area[i].AreaDetail, 
@@ -65,6 +66,7 @@ router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어�
                 Latitude < (? + ?) AND Latitude > (? - ?) AND
                 Longitude < (? + ?) AND Longitude > (? - ?);`;
                 
+
                 let rs = await db.executePreparedStatement(sql, param);
                 for(a in rs) {
                     result.push({
@@ -75,6 +77,23 @@ router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어�
                     })
                 }
             }
+
+            let options = {
+                url: 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords='+`${longitude},${latitude}`+'&orders=addr&output=json',
+                method: 'GET',
+                headers: {
+                    'X-NCP-APIGW-API-KEY-ID':'t0onsa248e', //앱 등록 시 발급받은 Client ID
+                    'X-NCP-APIGW-API-KEY':'i6jm0umpPLm4oYf3z9EfbbdRXAgwRHFJeFsANllI', //앱 등록 시 발급받은 Client Secret
+                },
+            };
+            console.log("aaa");
+            let address = await request(options, async (err, res, body) => {
+                console.log(err);
+                console.log(JSON.parse(body));
+                return  JSON.parse(body);
+            });
+            console.log(address);
+            
             if(result.length == 0) {
                 throw "검색된 방이 없습니다.";
             }
@@ -99,8 +118,8 @@ router.post('/', decode, async(req, res) => {
         const userId = req.token.sub;
         const body = req.body;
         insertBodyCheck.check(body);
-        let sql = "INSERT INTO room(RoomName, RoomPW, Latitude, Longitude, MemberLimit, AreaType, AreaDetail) values(?,?,?,?,?,?,?)"
-        let param = [body.name, body.password, body.latitude, body.longitude, body.memberLimit, body.areaType, body.areaDetail];
+        let sql = "INSERT INTO room(RoomName, RoomPW, Latitude, Longitude, MemberLimit, AreaType, AreaDetail, Address) values(?,?,?,?,?,?,?,?)";
+        let param = [body.name, body.password, body.latitude, body.longitude, body.memberLimit, body.areaType, body.areaDetail, body.address];
         const roomId = await db.executePreparedStatement(sql, param);
         
         sql = "SELECT AccountID FROM account WHERE id = ?;"
