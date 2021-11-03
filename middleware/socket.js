@@ -81,6 +81,10 @@ module.exports.init=(io)=>{
                 io.to(roomId).emit('everyin',{
                     msg:nickname+"님이 입장하셨습니다."
                 })
+
+
+
+                
             } catch(e) {
                 console.log(e);
                 socket.emit('errin',{
