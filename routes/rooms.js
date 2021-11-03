@@ -1,6 +1,5 @@
 var express = require('express');
 const decode = require('../middleware/token');
-const request = require('request')
 var router = express.Router();
 const insertBodyCheck = require('../check/insertBodyCheck');
 var db = require('../model/db');
@@ -8,8 +7,8 @@ const oneMeter = require('../config/distantConfig');
 const fcm = require('../middleware/fcm');
 const isHead = require('../check/isHead');
 const existUser = require('../check/existUser');
-const isBaned = require('../check/isBaned');
-const { user } = require('../config/dbconfig');
+const isBaned = require('../check/isBaned')
+const naver = require('../middleware/apiRequest');
 
 
 router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어갔던 방
@@ -51,65 +50,64 @@ router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어�
         }
     } else {
         try {
-            let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
-            let area = await db.executePreparedStatement(sql);
-            let result = [];
-            let latitude =  parseFloat(req.query.latitude);
-            let longitude = parseFloat(req.query.longitude);
+        let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
+        let area = await db.executePreparedStatement(sql);
+        let result = [];
+        let latitude =  parseFloat(req.query.latitude);
+        let longitude = parseFloat(req.query.longitude);
 
-            for(i in area) {
-                let param =[
-                    latitude, oneMeter*area[i].AreaDetail, 
-                    latitude, oneMeter*area[i].AreaDetail, 
-                    longitude, oneMeter*area[i].AreaDetail, 
-                    longitude, oneMeter*area[i].AreaDetail
-                ];
-                sql = `SELECT * FROM hotsix.room WHERE 
-                Latitude < (? + ?) AND Latitude > (? - ?) AND
-                Longitude < (? + ?) AND Longitude > (? - ?);`;
-                
-
-                let rs = await db.executePreparedStatement(sql, param);
-                for(a in rs) {
-                    result.push({
-                        roomID : rs[a].RoomID,
-                        roomName : rs[a].RoomName,
-                        memberLimit : rs[a].MemberLimit,
-                        roomRange : rs[a].AreaDetail
-                    })
-                }
-            }
-
-            let options = {
-                url: 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords='+`${longitude},${latitude}`+'&orders=addr&output=json',
-                method: 'GET',
-                headers: {
-                    'X-NCP-APIGW-API-KEY-ID':'t0onsa248e', //앱 등록 시 발급받은 Client ID
-                    'X-NCP-APIGW-API-KEY':'i6jm0umpPLm4oYf3z9EfbbdRXAgwRHFJeFsANllI', //앱 등록 시 발급받은 Client Secret
-                },
-            };
-            console.log("aaa");
-            let address = await request(options, async (err, res, body) => {
-                console.log(err);
-                console.log(JSON.parse(body));
-                return  JSON.parse(body);
-            });
-            console.log(address);
+        for(i in area) {
+            let param =[
+                latitude, oneMeter*area[i].AreaDetail, 
+                latitude, oneMeter*area[i].AreaDetail, 
+                longitude, oneMeter*area[i].AreaDetail, 
+                longitude, oneMeter*area[i].AreaDetail
+            ];
+            sql = `SELECT * FROM hotsix.room WHERE 
+            Latitude < (? + ?) AND Latitude > (? - ?) AND
+            Longitude < (? + ?) AND Longitude > (? - ?);`;
             
-            if(result.length == 0) {
-                throw "검색된 방이 없습니다.";
+
+            let rs = await db.executePreparedStatement(sql, param);
+            for(a in rs) {
+                result.push({
+                    roomID : rs[a].RoomID,
+                    roomName : rs[a].RoomName,
+                    memberLimit : rs[a].MemberLimit,
+                    roomRange : rs[a].AreaDetail,
+                    areaType : rs[a].AreaType
+                })
             }
-            let nonDuplicatedResult = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
-            res.status(200).json(nonDuplicatedResult);
-        } catch (e) {
-            console.log(e);
+            
+        }
+        if(result.length != 0) {
+            result = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
+        }
+        let apiResult = await naver.get(latitude, longitude);
+        sql = "";
+        for(i in apiResult) {
+            sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION `;
+        }
+        sql = sql.substring(0, sql.length-6);
+        let result2 = await db.executePreparedStatement(sql, apiResult);
+
+        for(a of result2) {
+            result.push({
+                roomID : a.RoomID,
+                roomName : a.RoomName,
+                memberLimit : a.MemberLimit,
+                address : a.Address,
+                areaType : a.AreaType
+            })
+        }
+        res.status(200).json(result);
+        } catch(e) {
             res.status(400).json({
                 msg : e
             })
         }
 
     }
-    
 })
 
 
@@ -119,70 +117,45 @@ router.post('/', decode, async(req, res) => {
     try{
         const userId = req.token.sub;
         const body = req.body;
-        insertBodyCheck.check(body);
-        let sql = "INSERT INTO room(RoomName, RoomPW, Latitude, Longitude, MemberLimit, AreaType, AreaDetail, Address) values(?,?,?,?,?,?,?,?)";
-        let param = [body.name, body.password, body.latitude, body.longitude, body.memberLimit, body.areaType, body.areaDetail, body.address];
-        const roomId = await db.executePreparedStatement(sql, param);
-        
-        sql = "SELECT AccountID FROM account WHERE id = ?;"
-        console.log(userId);
-        let accountId = await db.executePreparedStatement(sql, [userId]);
-        accountId = accountId[0].AccountID
-        
-        sql = "INSERT INTO member(IsHead, RoomID, AccountID, NickName) values(?,?,?,?);";
-        param = [1,roomId.insertId, accountId, body.nickName];
-        await db.executePreparedStatement(sql, param);
-        
-        res.status(201).json({
-            msg : "OK"
-        });
+        if(body.areaType == 1) {
+            let sql = "INSERT INTO room(RoomName, RoomPW, MemberLimit, AreaType, Address) values(?,?,?,?,?)";
+            let param = [body.name, body.password, body.memberLimit, body.areaType, body.address];
+            const roomId = await db.executePreparedStatement(sql, param);
+            
+            sql = "SELECT AccountID FROM account WHERE id = ?;"
+            let accountId = await db.executePreparedStatement(sql, [userId]);
+            accountId = accountId[0].AccountID
+            
+            sql = "INSERT INTO member(IsHead, RoomID, AccountID, NickName) values(?,?,?,?);";
+            param = [1,roomId.insertId, accountId, body.nickName];
+            await db.executePreparedStatement(sql, param);
+            
+            res.status(201).json({
+                msg : "OK"
+            });
+        }else {
+            insertBodyCheck.check(body);
+            let sql = "INSERT INTO room(RoomName, RoomPW, Latitude, Longitude, MemberLimit, AreaType, AreaDetail) values(?,?,?,?,?,?,?)";
+            let param = [body.name, body.password, body.latitude, body.longitude, body.memberLimit, body.areaType, body.areaDetail];
+            const roomId = await db.executePreparedStatement(sql, param);
+            
+            sql = "SELECT AccountID FROM account WHERE id = ?;"
+            console.log(userId);
+            let accountId = await db.executePreparedStatement(sql, [userId]);
+            accountId = accountId[0].AccountID
+            
+            sql = "INSERT INTO member(IsHead, RoomID, AccountID, NickName) values(?,?,?,?);";
+            param = [1,roomId.insertId, accountId, body.nickName];
+            await db.executePreparedStatement(sql, param);
+            
+            res.status(201).json({
+                msg : "OK"
+            });
+        }
     }catch(e) {
         res.status(401).json({
             msg : e
         })
-    }
-})
-
-router.put('/in',decode,async(req,res)=>{
-    try {
-        let roomId = req.body.roomID
-        let userId = req.token.sub
-        let nickname= req.body.nickname
-        let password = req.body.password
-        await isBaned.check(roomId, userId);
-
-        let sql = "SELECT RoomPW FROM room WHERE RoomID = ?";
-        let param = [roomId];
-        let existPW = await db.executePreparedStatement(sql, param);
-        if(existPW.length == 0) {
-            throw "방아이디와 일치하는 방이 없습니다.";
-        }
-        if(existPW[0].RoomPW !== '') {
-            let sql =  `SELECT count(*) AS len FROM room WHERE RoomID = ? AND RoomPW = ?`;
-            let param = [roomId, password];
-
-            let result = await db.executePreparedStatement(sql, param);
-            if(result[0].len === 0) {
-                throw "비밀번호가 일치하지 않습니다."
-            }
-        }
-        
-        sql = "INSERT INTO member(isHead, RoomID, AccountID, NickName) VALUES(0, ?, (SELECT AccountID FROM account WHERE id = ?), ?)";
-        param = [roomId, userId, nickname];
-        await db.executePreparedStatement(sql, param);
-        // await fcm.send("HostpoTalk", nickname + "님이 입장하셨습니다.", roomId);
-        res.status(200).json({msg:"success"});
-        res.app.get('io').to(roomId).emit('message',{
-            type:"in",
-            msg:null,
-            msgID:null,
-            timestamp:null,
-            roomID:roomId,
-            userID:userId,
-        });
-    } catch(e) {
-        console.log(e);
-        res.status(400).json(e);
     }
 })
 
