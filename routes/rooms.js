@@ -146,7 +146,7 @@ router.post('/', decode, async(req, res) => {
 router.put('/in',decode,async(req,res)=>{
     try {
         let roomId = req.body.roomID
-        let userId = req.body.userID
+        let userId = req.token.sub
         let nickname= req.body.nickname
         let password = req.body.password
         await isBaned.check(roomId, userId);
@@ -172,11 +172,13 @@ router.put('/in',decode,async(req,res)=>{
         await db.executePreparedStatement(sql, param);
         // await fcm.send("HostpoTalk", nickname + "님이 입장하셨습니다.", roomId);
         res.status(200).json({msg:"success"});
-        res.app.get('io').to(/*룸아이디 */).emit('message',{
+        res.app.get('io').to(roomId).emit('message',{
             type:"in",
             msg:null,
+            msgID:null,
+            timestamp:null,
             roomID:roomId,
-            userID:userId
+            userID:userId,
         });
     } catch(e) {
         console.log(e);

@@ -33,11 +33,12 @@ module.exports.init=(io)=>{
             const field= await(db.executePreparedStatement(sql,params).rows);
             console.log(field);
             io.to(data.RoomID).emit('message',{
-                content:data.content,
-                RoomID:data.RoomID,
+                type:"msg",
+                msg:data.content,
+                roomID:data.RoomID,
                 MemberID:data.MemberID,
                 timestamp:data.timestamp,
-                messageID:field.insertedID
+                messageID:field.insertId
             })
             //셀렉트로 전체 찾아서 푸쉬
             //이후 푸쉬 및 재확인
@@ -49,7 +50,11 @@ module.exports.init=(io)=>{
         })
 
         socket.on('in',async(data)=>{
-            
+            socket.join(data.roomID)
+            /*
+            roomID=>
+            userlist, message
+            */
         })
         socket.on('unload',(data)=>{
             socket.leave(data.room);
