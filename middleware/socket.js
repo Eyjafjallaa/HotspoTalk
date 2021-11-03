@@ -27,7 +27,9 @@ module.exports.init=(io)=>{
         
 
         socket.on('message',async (data)=>{
+            //MEMBERID 토큰으로 바꿔서
             
+            const row = await(db.executePreparedStatement("SELECT select member.NickName from member left join account on account.AccountID = member.AccountID where RoomID =? and account.AccountID = ?",[data.roomID,token]).rows);
             let sql="INSERT INTO chatting (content, RoomID, MemberID) VALUES(?,?,?)"
             let params=[data.content,data.RoomID,data.MemberID ];
             const field= await(db.executePreparedStatement(sql,params).rows);
