@@ -50,59 +50,64 @@ router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어�
         }
     } else {
         try {
-            let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
-            let area = await db.executePreparedStatement(sql);
-            let result = [];
-            let latitude =  parseFloat(req.query.latitude);
-            let longitude = parseFloat(req.query.longitude);
+        let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
+        let area = await db.executePreparedStatement(sql);
+        let result = [];
+        let latitude =  parseFloat(req.query.latitude);
+        let longitude = parseFloat(req.query.longitude);
 
-            for(i in area) {
-                let param =[
-                    latitude, oneMeter*area[i].AreaDetail, 
-                    latitude, oneMeter*area[i].AreaDetail, 
-                    longitude, oneMeter*area[i].AreaDetail, 
-                    longitude, oneMeter*area[i].AreaDetail
-                ];
-                sql = `SELECT * FROM hotsix.room WHERE 
-                Latitude < (? + ?) AND Latitude > (? - ?) AND
-                Longitude < (? + ?) AND Longitude > (? - ?);`;
-                
+        for(i in area) {
+            let param =[
+                latitude, oneMeter*area[i].AreaDetail, 
+                latitude, oneMeter*area[i].AreaDetail, 
+                longitude, oneMeter*area[i].AreaDetail, 
+                longitude, oneMeter*area[i].AreaDetail
+            ];
+            sql = `SELECT * FROM hotsix.room WHERE 
+            Latitude < (? + ?) AND Latitude > (? - ?) AND
+            Longitude < (? + ?) AND Longitude > (? - ?);`;
+            
 
-                let rs = await db.executePreparedStatement(sql, param);
-                for(a in rs) {
-                    result.push({
-                        roomID : rs[a].RoomID,
-                        roomName : rs[a].RoomName,
-                        memberLimit : rs[a].MemberLimit,
-                        roomRange : rs[a].AreaDetail,
-                        areaType : rs[a].AreaType
-                    })
-                }
+            let rs = await db.executePreparedStatement(sql, param);
+            for(a in rs) {
+                result.push({
+                    roomID : rs[a].RoomID,
+                    roomName : rs[a].RoomName,
+                    memberLimit : rs[a].MemberLimit,
+                    roomRange : rs[a].AreaDetail,
+                    areaType : rs[a].AreaType
+                })
             }
             
-            
-                if(result.length == 0) {
-                        throw "검색된 방이 없습니다.";
-                }
-                let nonDuplicatedResult = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
-                let apiResult = await naver.get(latitude, longitude);
-                console.log(apiResult);
-                sql = "";
-                for(i in apiResult) {
-                    sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION`;
-                }
-                sql = sql.substring(0, sql.length-5);
+        }
+        if(result.length != 0) {
+            result = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
+        }
+        let apiResult = await naver.get(latitude, longitude);
+        sql = "";
+        for(i in apiResult) {
+            sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION `;
+        }
+        sql = sql.substring(0, sql.length-6);
+        let result2 = await db.executePreparedStatement(sql, apiResult);
 
-            res.status(200).json("OK");
-            } catch (e) {
-            // console.log(e);
+        for(a of result2) {
+            result.push({
+                roomID : a.RoomID,
+                roomName : a.RoomName,
+                memberLimit : a.MemberLimit,
+                address : a.Address,
+                areaType : a.AreaType
+            })
+        }
+        res.status(200).json(result);
+        } catch(e) {
             res.status(400).json({
                 msg : e
             })
         }
 
     }
-    
 })
 
 
