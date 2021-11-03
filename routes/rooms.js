@@ -8,7 +8,9 @@ const oneMeter = require('../config/distantConfig');
 const fcm = require('../middleware/fcm');
 const isHead = require('../check/isHead');
 const existUser = require('../check/existUser');
-const isBaned = require('../check/isBaned')
+const isBaned = require('../check/isBaned');
+const { user } = require('../config/dbconfig');
+
 
 router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어갔던 방
     if(Object.keys(req.query).length === 0 && req.query.constructor === Object) { //파라미터가 없을 경우 -> 들어갔던 방
@@ -138,6 +140,47 @@ router.post('/', decode, async(req, res) => {
         res.status(401).json({
             msg : e
         })
+    }
+})
+
+router.put('/in',decode,async(req,res)=>{
+    try {
+        let roomId = req.body.roomID
+        let userId = req.body.userID
+        let nickname= req.body.nickname
+        let password = req.body.password
+        await isBaned.check(roomId, userId);
+
+        let sql = "SELECT RoomPW FROM room WHERE RoomID = ?";
+        let param = [roomId];
+        let existPW = await db.executePreparedStatement(sql, param);
+        if(existPW.length == 0) {
+            throw "방아이디와 일치하는 방이 없습니다.";
+        }
+        if(existPW[0].RoomPW !== '') {
+            let sql =  `SELECT count(*) AS len FROM room WHERE RoomID = ? AND RoomPW = ?`;
+            let param = [roomId, password];
+
+            let result = await db.executePreparedStatement(sql, param);
+            if(result[0].len === 0) {
+                throw "비밀번호가 일치하지 않습니다."
+            }
+        }
+        
+        sql = "INSERT INTO member(isHead, RoomID, AccountID, NickName) VALUES(0, ?, (SELECT AccountID FROM account WHERE id = ?), ?)";
+        param = [roomId, userId, nickname];
+        await db.executePreparedStatement(sql, param);
+        // await fcm.send("HostpoTalk", nickname + "님이 입장하셨습니다.", roomId);
+        res.status(200).json({msg:"success"});
+        res.app.get('io').to(/*룸아이디 */).emit('message',{
+            type:"in",
+            msg:null,
+            roomID:roomId,
+            userID:userId
+        });
+    } catch(e) {
+        console.log(e);
+        res.status(400).json(e);
     }
 })
 
