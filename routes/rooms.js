@@ -84,6 +84,7 @@ router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어�
             result = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
         }
         let apiResult = await naver.get(latitude, longitude);
+
         sql = "";
         for(i in apiResult) {
             sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION `;
@@ -99,6 +100,9 @@ router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어�
                 address : a.Address,
                 areaType : a.AreaType
             })
+        }
+        if(result.length == 0) {
+            result = {msg : "검샘된 방이 없습니다."};
         }
         res.status(200).json(result);
         } catch(e) {
