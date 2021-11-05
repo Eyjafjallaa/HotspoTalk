@@ -12,10 +12,10 @@ const naver = require('../middleware/apiRequest');
 
 router.get("/", decode, async (req, res) => {
   //들어갈 수 있는 방 들어갔던 방
+  let userId = req.token.sub;
   if (Object.keys(req.query).length === 0 && req.query.constructor === Object) {
     //파라미터가 없을 경우 -> 들어갔던 방
     try {
-      let userId = req.token.sub;
       let sql = `SELECT room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, member.IsHead
                         FROM account 
                         join member join room 
@@ -119,9 +119,17 @@ router.get("/", decode, async (req, res) => {
             and member.RoomID <> ALL(select RoomID from hotsix.member WHERE AccountID = ?)
             union`;
           }
+          //[
+          //api result 1, token.sub, api result 2, token.sub ... ...
+          //]
           sql = sql.substring(0, sql.length - 6);
           sql += "group by room.RoomID"
-          let result2 = await db.executePreparedStatement(sql, apiResult);
+          let param = [];
+          for(i of apiResult) {
+            param.push(i);
+            param.push(userId);
+          }
+          let result2 = await db.executePreparedStatement(sql, param);
     
           for (a of result2) {
             result.push({
