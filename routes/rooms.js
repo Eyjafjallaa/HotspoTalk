@@ -29,6 +29,7 @@ router.get("/", decode, async (req, res) => {
       if (result.length == 0) {
         res.status(200).json({
           msg: "없음",
+          data : []
         });
       } else {
         let arr = [];
@@ -101,11 +102,13 @@ router.get("/", decode, async (req, res) => {
       let apiResult = await naver.get(latitude, longitude);
       if(!apiResult) {
         if(result.length == 0) {
-            res.status(200).json({msg : "검색된 방이 없습니다."});
+            res.status(200).json({msg : "검색된 방이 없습니다.",  data : []});
             return;
         }
       } else {
           sql = "";
+          result.data = result;
+          result.msg = "OK";
           for (i in apiResult) {
             sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION `;
           }
@@ -122,10 +125,19 @@ router.get("/", decode, async (req, res) => {
             });
           }
           if (result.length == 0) {
-            result = { msg: "검색된 방이 없습니다." };
+              resData = {
+                  msg : "검색된 방이 없습니다.",
+                  data : []
+              }
+          }
+          else {
+            resData = {
+                msg : "OK",
+                data : result
+            }
           }
         }
-        res.status(200).json(result);
+        res.status(200).json(resData);
 
     } catch (e) {
       res.status(400).json({

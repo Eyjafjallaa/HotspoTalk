@@ -17,6 +17,7 @@ exports.get = (latitude, longitude) => {
             }     
             try {
                 let reqResult = JSON.parse(body);
+                // console.log(reqResult);
                 if(reqResult.status.code !== 0) {
                     resolve(false);
                     return
