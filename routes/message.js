@@ -10,25 +10,30 @@ admin.initializeApp({
 })
 
 router.get('/', (req, res) => {
+    console.log("sadfa");
     let title = req.query.title;
     let body = req.query.body;
-    let roomId = req.query.roomId;
+    // let roomId = req.query.roomId;
     //방번호 디바이스 토큰 메시지
     let target_token =`c1WsZgRXSOWvpJ6QH6uC4f:APA91bGz_Llh3omNiwycIgTFa_stjS5jOkVM-blGRg1x1OS2waxlcOVpmsO21DoNXUDGrg7QAJE1F46n24rqocGjwmImM_UJOoRxITKEhuuOnbH9jKilO6C-egvPFsackVlkP9Q_e85O`
   	//target_token은 푸시 메시지를 받을 디바이스의 토큰값입니다
 
-  let message = { //넣어야할 내용 : 시간 보낸사람 내용 방번호
-    notification: {
-      title: title,
-      message: body,
-      roomId : roomId
-    },
-    data: {
+    let messageData = JSON.stringify({
       title : title,
       message: body,
-      roomId : roomId
-    },
-    token: target_token,
+      userId: "testuser",
+      roomId : 46
+    })
+    let message = { //넣어야할 내용 : 시간 보낸사람 내용 방번호
+      name : '1',
+      data: {messageData},
+      notification: {
+        title: title,
+        message: body,
+        userId: "testuser",
+        roomId : 46
+      },
+      token: target_token,
   }
   console.log(message);
   admin
@@ -39,8 +44,8 @@ router.get('/', (req, res) => {
       return res.status(200).json({success : true})
     })
     .catch(function (err) {
-        console.log('Error Sending message!!! : ', err)
-        return res.status(400).json({success : false})
+      console.log('Error Sending message!!! : ', err)
+      return res.status(400).json({success : false})
     });
 })
 

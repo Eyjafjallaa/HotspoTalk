@@ -30,15 +30,15 @@ exports.send = async(title, message, sender,roomId) => {
         },
         token: target_tokens,
     }
-
-    admin
-    .messaging()
-    .sendMulticast(data)
-    .then(function (response) {
-        console.log('Successfully sent message: : ', response)
-    })
-    .catch(function (err) {
-        console.log('Error Sending message!!! : ', err)
-    });
+    console.log(data);
+    // admin
+    // .messaging()
+    // .sendMulticast(data)
+    // .then(function (response) {
+    //     console.log('Successfully sent message: : ', response)
+    // })
+    // .catch(function (err) {
+    //     console.log('Error Sending message!!! : ', err)
+    // });
 
 }

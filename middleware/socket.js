@@ -38,10 +38,10 @@ module.exports.init=(io)=>{
                 console.log(field);
                 io.broadcast.to(data.RoomID).emit('message',{
                     type:"msg",
-                    msg:data.content,
+                    content:data.content,
                     roomID:data.RoomID,
                     nickname:row[0],
-                    MemberID:data.MemberID,
+                    memberID:data.MemberID,
                     timestamp:data.timestamp,
                     messageID:field.insertId
                 })
