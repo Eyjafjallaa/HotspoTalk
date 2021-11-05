@@ -85,7 +85,9 @@ router.get("/", decode, async (req, res) => {
             WHERE 
             Latitude < (? + ?) AND Latitude > (? - ?) AND
             Longitude < (? + ?) AND Longitude > (? - ?) 
-            AND member.AccountID<>?`;
+            member.RoomID <> 
+            ALL(select RoomID from hotsix.member WHERE AccountID = ?)
+            group by room.RoomID`;
 
         let rs = await db.executePreparedStatement(sql, param);
         for (a in rs) {
