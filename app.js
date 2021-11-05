@@ -24,7 +24,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/rooms', roomsRounter);
 app.use('/account', accountRouter);
 app.use('/message', message);
-app.use('/',testRouter);
+app.use('/',testRouter);           
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -15,21 +15,27 @@ exports.get = (latitude, longitude) => {
             if(err) {
                 throw err;
             }
-            let reqResult = JSON.parse(body);
-            let result = [];
-            if(reqResult.results[0].region.area4.name !== "") {
+            
+            try {
+                let reqResult = JSON.parse(body);
+                let result = [];
+                if(reqResult.results[0].region.area4.name !== "") {
+                    result.push(reqResult.results[0].region.area1.name + " " 
+                        + reqResult.results[0].region.area2.name + " " 
+                        + reqResult.results[0].region.area3.name + " "
+                        + reqResult.results[0].region.area4.name);
+                }
                 result.push(reqResult.results[0].region.area1.name + " " 
                     + reqResult.results[0].region.area2.name + " " 
-                    + reqResult.results[0].region.area3.name + " "
-                    + reqResult.results[0].region.area4.name);
+                    +reqResult.results[0].region.area3.name);
+                result.push(reqResult.results[0].region.area1.name + " " 
+                    + reqResult.results[0].region.area2.name);
+                result.push(reqResult.results[0].region.area1.name);
+                resolve(result);
+                
+            } catch (error) {
+                throw error
             }
-            result.push(reqResult.results[0].region.area1.name + " " 
-                + reqResult.results[0].region.area2.name + " " 
-                +reqResult.results[0].region.area3.name);
-            result.push(reqResult.results[0].region.area1.name + " " 
-                + reqResult.results[0].region.area2.name);
-            result.push(reqResult.results[0].region.area1.name);
-            resolve(result);
         });
     });
 }
