@@ -149,5 +149,25 @@ router.put('/device', decode, async(req, res) => {
   })
 })
 
+router.post('/autoLogin', decode, async(req, res) => {
+  try {
+    const userId = req.token.sub;
+  
+    let sql = `SELECT id FROM account WHERE id = ?`;
+    let param = [userId];
+  
+    let result = await db.executePreparedStatement(sql, param);
+    if (userId == result[0].id) {
+      res.status(200).json({msg : "OK"});
+    } else {
+      res.status(403).json({msg : "FAIL"});
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(400).json(error);
+  }
+
+})
+
 module.exports = router;
             
