@@ -400,7 +400,7 @@ router.get('/:roomId', async(req, res) => {
         const roomId = req.params.roomId;
         const {start, count} = req.query;
     
-        let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp
+        let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp,chatting.msg
         FROM chatting 
         left JOIN member ON chatting.MemberID = member.MemberID 
         WHERE chatting.RoomID = ?
@@ -428,7 +428,5 @@ router.get('/:roomId', async(req, res) => {
 })
 
 
-router.delete(':roomid',async(req,res)=>{
-    
-})
+
 module.exports = router;
