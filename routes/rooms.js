@@ -288,7 +288,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             throw "해당 유저는 방에 없습니다."
         }
         let content = nicknameRow[0].NickName + " 님이 나가셨습니다."
-        let sql = `INSERT INTO chatting(content, RoomID, MemberID, Type) VALUES(?,?,(SELECT member.MemberID FROM member join account ON account.AccountID = member.AccountID WHERE account.id = ? AND member.RoomID = ?),'in')`;
+        let sql = `INSERT INTO chatting(content, RoomID, MemberID, Type) VALUES(?,?,(SELECT member.MemberID FROM member join account ON account.AccountID = member.AccountID WHERE account.id = ? AND member.RoomID = ?),'leave')`;
         let param = [content,roomId, userId, roomId];
         let feild = await db.executePreparedStatement(sql, param);
         sql = `SELECT chatting.content, chatting.RoomID, chatting.Timestamp, member.nickname FROM chatting join member on member.MemberID = chatting.MemberID WHERE ChattingID = ?`;
@@ -299,7 +299,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
         // await db.executePreparedStatement(sql, param);
         
         res.app.get('io').to(roomId).emit('message',{
-            type:"in",
+            type:"leave",
             content:result[0].content,
             roomId:result[0].RoomID,
             nickname:result[0].nickname,
