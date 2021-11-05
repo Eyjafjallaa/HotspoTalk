@@ -15,7 +15,7 @@ router.get('/', (req, res) => {
     let body = req.query.body;
     // let roomId = req.query.roomId;
     //방번호 디바이스 토큰 메시지
-    let target_token =`eTfzkqvG9qNXo3efK0QCXX:APA91bHzgXQMe-6qFi3gaB197qiM_ABuhomqALeUFWbNfmLyWqBCwp6DLoJxcnVgqjuJjWfhihugz_PAtgXSTtT09HxMnVj4hXRZxmx59sMGTizPC0Hl-jxRTH2krJmIWnH2BT61C6xF`
+    let target_token =`fkp2ZxF-Tk6MSXl0CLhafh:APA91bFjrGIeYB3JOJxj52io47jPA0Og26Y1nb3Xd2QyIhlqA4qvRBgdflEaidfKQkx0p1dnpw4Aif6U_St7l4q6p-B8DiYUiRPV_JbV286vypEz_WNTHh4aoOCJlgrHS1ivuCp1CFHb`
   	//target_token은 푸시 메시지를 받을 디바이스의 토큰값입니다
 
     let messageData = JSON.stringify({
