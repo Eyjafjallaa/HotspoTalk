@@ -163,7 +163,6 @@ router.post('/', decode, async(req, res) => {
                 msg : "OK"
             });
         }else {
-            insertBodyCheck.check(body);
             let sql = "INSERT INTO room(RoomName, RoomPW, Latitude, Longitude, MemberLimit, AreaType, AreaDetail) values(?,?,?,?,?,?,?)";
             let param = [body.name, body.password, body.latitude, body.longitude, body.memberLimit, body.areaType, body.areaDetail];
             const roomId = await db.executePreparedStatement(sql, param);
