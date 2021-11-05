@@ -36,7 +36,7 @@ module.exports.init=(io)=>{
                 let params=[data.content,data.RoomID,data.MemberID];
                 const field= await(db.executePreparedStatement(sql,params).rows);
                 console.log(field);
-                io.to(data.RoomID).emit('message',{
+                io.broadcast.to(data.RoomID).emit('message',{
                     type:"msg",
                     msg:data.content,
                     roomID:data.RoomID,
