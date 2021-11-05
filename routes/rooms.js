@@ -181,6 +181,7 @@ router.post('/', decode, async(req, res) => {
             });
         }
     }catch(e) {
+        console.log(e);
         res.status(400).json({
             msg : e
         })
@@ -427,5 +428,7 @@ router.get('/:roomId', async(req, res) => {
 })
 
 
-router.delete()
+router.delete(':roomid',async(req,res)=>{
+    
+})
 module.exports = router;
