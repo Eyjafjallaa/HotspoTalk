@@ -215,7 +215,9 @@ router.post('/:roomid', decode, async(req, res) => { //방 입장
         res.status(200).json({
             msg : "OK"
         })
-        
+        res.app.get('io').to(roomId).emit('message',{
+            type:"in",
+        });
     } catch(e) {
         console.log(e);
         res.status(400).json({

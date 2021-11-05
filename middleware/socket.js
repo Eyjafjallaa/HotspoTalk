@@ -49,7 +49,7 @@ module.exports.init=(io)=>{
                 //이후 푸쉬 및 재확인
                 await fcm.send("HotspoTalk 메시지",data.content,data.RoomID);
             } catch (error) {
-                io.emit('err', {
+                io.to(data.RoomID).emit('err', {
                     msg : error
                 })
             }
