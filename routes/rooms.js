@@ -182,7 +182,7 @@ router.post('/', decode, async(req, res) => {
             });
         }
     }catch(e) {
-        res.status(401).json({
+        res.status(400).json({
             msg : e
         })
     }
@@ -274,7 +274,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             msg : "OK"
         })
     } catch(e) {
-        res.status(401).json({
+        res.status(400).json({
             msg : e
         })
     }
@@ -296,7 +296,7 @@ router.put('/:roomid/edit', decode, async(req, res) => {
             msg : "OK"
         })
        } catch(e) {
-        res.status(401).json({
+        res.status(400).json({
             msg : e
         })
     }
@@ -343,7 +343,8 @@ router.delete('/:roomid', decode, async(req, res) => {
             msg : "OK"
         })
     } catch(e) {
-        res.status(401).json({
+        console.log(e);
+        res.status(400).json({
             msg : e
         })
     }
@@ -363,7 +364,7 @@ router.put('/:roomid/rename', decode, async(req, res) => {
             msg : "OK"
         })
     } catch(e) {
-        res.status(401).json({
+        res.status(400).json({
             msg : e
         })
     }
@@ -387,7 +388,7 @@ router.put('/ban', decode, async(req, res) => {
             msg : "OK"
         })
     } catch(e) {
-        res.status(401).json({
+        res.status(400).json({
             msg : e
         })
     }
