@@ -439,5 +439,5 @@ router.get('/:roomId', async(req, res) => {
 })
 
 
-// router.delete()
+router.delete()
 module.exports = router;
