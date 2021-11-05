@@ -47,7 +47,7 @@ module.exports.init=(io)=>{
                 })
                 //셀렉트로 전체 찾아서 푸쉬
                 //이후 푸쉬 및 재확인
-                await fcm.send("HotspoTalk 메시지",data.content,data.RoomID,data.timestamp , field.insertId);
+                await fcm.send("HotspoTalk 메시지",data.content,data.RoomID,data.timestamp , field.insertId, userId);
             } catch (error) {
                 socket.emit('err', {
                     msg : error

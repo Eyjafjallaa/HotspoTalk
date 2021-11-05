@@ -5,10 +5,10 @@ var db = require('../model/db');
 //userId, 방번호
 //방번호에 있는 userId로 deviceToken 얻기
 
-exports.send = async(title, message, sender,roomId, timestamp, messageID) => {
+exports.send = async(title, message, sender,roomId, timestamp, messageID, userId) => {
 
-    let sql = "SELECT Devtoken FROM member JOIN account ON member.AccountID = account.AccountID WHERE roomID = ?;"
-    let param = [roomId];
+    let sql = "SELECT Devtoken FROM member JOIN account ON member.AccountID = account.AccountID WHERE roomID = ? AND account.id <> ?;"
+    let param = [roomId, userId];
     let result = await db.executePreparedStatement(sql, param);
 
     let target_tokens = []
@@ -22,7 +22,6 @@ exports.send = async(title, message, sender,roomId, timestamp, messageID) => {
         message: message,
         roomId : roomId
     })
-
     let data = { //넣어야할 내용 : 시간 보낸사람 내용 방번호
         name : messageID.toString,
         notification: {
