@@ -400,7 +400,7 @@ router.get('/:roomId', async(req, res) => {
         const roomId = req.params.roomId;
         const {start, count} = req.query;
     
-        let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp,chatting.msg
+        let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID
         FROM chatting 
         left JOIN member ON chatting.MemberID = member.MemberID 
         WHERE chatting.RoomID = ?
@@ -415,7 +415,9 @@ router.get('/:roomId', async(req, res) => {
             arr.push({
                 nickName : i.NickName,
                 content : i.content,
-                timeStamp : i.TimeStamp
+                timeStamp : i.TimeStamp,
+                type : i.Type,
+                messageID:i.ChattingID
             })
         }
 
