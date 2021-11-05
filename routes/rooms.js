@@ -11,120 +11,122 @@ const isBaned = require('../check/isBaned')
 const naver = require('../middleware/apiRequest');
 
 
-router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어갔던 방
-    if(Object.keys(req.query).length === 0 && req.query.constructor === Object) { //파라미터가 없을 경우 -> 들어갔던 방
-        try {
-            let userId = req.token.sub;
-            let sql = `SELECT room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, member.IsHead
+router.get("/", decode, async (req, res) => {
+  //들어갈 수 있는 방 들어갔던 방
+  if (Object.keys(req.query).length === 0 && req.query.constructor === Object) {
+    //파라미터가 없을 경우 -> 들어갔던 방
+    try {
+      let userId = req.token.sub;
+      let sql = `SELECT room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, member.IsHead
                         FROM account 
                         join member join room 
                         ON account.AccountID = member.AccountID 
                         AND room.RoomID = member.roomID 
-                        WHERE account.id = ?;`
-            let param = [userId];
-        
-            let result = await db.executePreparedStatement(sql, param);
-            if(result.length == 0) {
-                res.status(200).json({
-                    msg : "없음"
-                })
-            } else {
-                let arr = [];
-                for(i in result) {
-                    if(result[i].AreaType == 1) {
-                        arr.push({
-                            roomId : result[i].RoomId,
-                            roomName : result[i].RoomName,
-                            roomPW : result[i].RoomPW,
-                            areaType : result[i].AreaType,
-                            address : result[i].Address,
-                            isHead : result[i].IsHead
-                        });
-                    } else {
-                        arr.push({
-                            roomId : result[i].RoomId,
-                            roomName : result[i].RoomName,
-                            roomPW : result[i].RoomPW,
-                            areaType : result[i].AreaType,
-                            roomRange : result[i].AreaDetail,
-                            isHead : result[i].IsHead
-                        });
-                    }
-                }
-                res.status(200).json(arr)
-            }
-    
-        } catch(e) {
-            console.log(e);
-            res.status(400).json({
-                msg : e
-            })
-        }
-    } else {
-        try {
-        let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
-        let area = await db.executePreparedStatement(sql);
-        let result = [];
-        let latitude =  parseFloat(req.query.latitude);
-        let longitude = parseFloat(req.query.longitude);
+                        WHERE account.id = ?;`;
+      let param = [userId];
 
-        for(i in area) {
-            let param =[
-                latitude, oneMeter*area[i].AreaDetail, 
-                latitude, oneMeter*area[i].AreaDetail, 
-                longitude, oneMeter*area[i].AreaDetail, 
-                longitude, oneMeter*area[i].AreaDetail
-            ];
-            sql = `SELECT * FROM hotsix.room WHERE 
+      let result = await db.executePreparedStatement(sql, param);
+      if (result.length == 0) {
+        res.status(200).json({
+          msg: "없음",
+        });
+      } else {
+        let arr = [];
+        for (i in result) {
+          if (result[i].AreaType == 1) {
+            arr.push({
+              roomId: result[i].RoomId,
+              roomName: result[i].RoomName,
+              roomPW: result[i].RoomPW,
+              areaType: result[i].AreaType,
+              address: result[i].Address,
+              isHead: result[i].IsHead,
+            });
+          } else {
+            arr.push({
+              roomId: result[i].RoomId,
+              roomName: result[i].RoomName,
+              roomPW: result[i].RoomPW,
+              areaType: result[i].AreaType,
+              roomRange: result[i].AreaDetail,
+              isHead: result[i].IsHead,
+            });
+          }
+        }
+        res.status(200).json(arr);
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(400).json({
+        msg: e,
+      });
+    }
+  } else {
+    try {
+      let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
+      let area = await db.executePreparedStatement(sql);
+      let result = [];
+      let latitude = parseFloat(req.query.latitude);
+      let longitude = parseFloat(req.query.longitude);
+
+      for (i in area) {
+        let param = [
+          latitude,
+          oneMeter * area[i].AreaDetail,
+          latitude,
+          oneMeter * area[i].AreaDetail,
+          longitude,
+          oneMeter * area[i].AreaDetail,
+          longitude,
+          oneMeter * area[i].AreaDetail,
+        ];
+        sql = `SELECT * FROM hotsix.room WHERE 
             Latitude < (? + ?) AND Latitude > (? - ?) AND
             Longitude < (? + ?) AND Longitude > (? - ?);`;
-            
 
-            let rs = await db.executePreparedStatement(sql, param);
-            for(a in rs) {
-                result.push({
-                    roomID : rs[a].RoomID,
-                    roomName : rs[a].RoomName,
-                    memberLimit : rs[a].MemberLimit,
-                    roomRange : rs[a].AreaDetail,
-                    areaType : rs[a].AreaType
-                })
-            }
-            
+        let rs = await db.executePreparedStatement(sql, param);
+        for (a in rs) {
+          result.push({
+            roomID: rs[a].RoomID,
+            roomName: rs[a].RoomName,
+            memberLimit: rs[a].MemberLimit,
+            roomRange: rs[a].AreaDetail,
+            areaType: rs[a].AreaType,
+          });
         }
-        if(result.length != 0) {
-            result = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
-        }
-        let apiResult = await naver.get(latitude, longitude);
+      }
+      if (result.length != 0) {
+        result = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
+      }
+      let apiResult = await naver.get(latitude, longitude);
 
-        sql = "";
-        for(i in apiResult) {
-            sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION `;
-        }
-        sql = sql.substring(0, sql.length-6);
-        let result2 = await db.executePreparedStatement(sql, apiResult);
+      sql = "";
+      for (i in apiResult) {
+        sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION `;
+      }
+      sql = sql.substring(0, sql.length - 6);
+      let result2 = await db.executePreparedStatement(sql, apiResult);
 
-        for(a of result2) {
-            result.push({
-                roomID : a.RoomID,
-                roomName : a.RoomName,
-                memberLimit : a.MemberLimit,
-                address : a.Address,
-                areaType : a.AreaType
-            })
-        }
-        if(result.length == 0) {
-            result = {msg : "검샘된 방이 없습니다."};
-        }
-        res.status(200).json(result);
-        } catch(e) {
-            res.status(400).json({
-                msg : e
-            })
-        }
-
+      for (a of result2) {
+        result.push({
+          roomID: a.RoomID,
+          roomName: a.RoomName,
+          memberLimit: a.MemberLimit,
+          address: a.Address,
+          areaType: a.AreaType,
+        });
+      }
+      if (result.length == 0) {
+        result = { msg: "검샘된 방이 없습니다." };
+      }
+      res.status(200).json(result);
+    } catch (e) {
+      res.status(400).json({
+        msg: e,
+      });
     }
-})
+  }
+});
 
 
 //longitude 경도 latitude 위도   areaType : 0 반경 1 주소 areaDetail : type이 0일때는 m / 1일 떄는 0이면 동 1이면 상위
