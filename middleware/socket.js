@@ -31,9 +31,9 @@ module.exports.init=(io)=>{
             try {
                 //MEMBERID 토큰으로 바꿔서
                 const userId = await socketTokendecode(data.MemberID);
-                const row = await(db.executePreparedStatement("SELECT member.NickName from member left join account on account.AccountID = member.AccountID where RoomID =? and account.id=?",[data.roomID,userId]).rows);
-                let sql="INSERT INTO chatting (content, RoomID, MemberID) VALUES(?,?,?)"
-                let params=[data.content,data.RoomID,data.MemberID];
+                const row = await(db.executePreparedStatement("SELECT member.NickName, member.MemberID from member left join account on account.AccountID = member.AccountID where RoomID =? and account.id=?",[data.roomID,userId]).rows);
+                let sql="INSERT INTO chatting (content, RoomID, MemberID) VALUES(?,?,)"
+                let params=[data.content,data.RoomID,row[0].MemberID];
                 const field= await(db.executePreparedStatement(sql,params).rows);
                 console.log(field);
                 io.broadcast.to(data.RoomID).emit('message',{
@@ -47,7 +47,7 @@ module.exports.init=(io)=>{
                 })
                 //셀렉트로 전체 찾아서 푸쉬
                 //이후 푸쉬 및 재확인
-                await fcm.send("message",data.content,data.RoomID);
+                await fcm.send("HotspoTalk 메시지",data.content,data.RoomID);
             } catch (error) {
                 io.emit('err', {
                     msg : error
