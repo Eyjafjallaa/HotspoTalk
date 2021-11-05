@@ -1,10 +1,9 @@
 var express = require('express');
 const decode = require('../middleware/token');
 var router = express.Router();
-const insertBodyCheck = require('../check/insertBodyCheck');
+// const insertBodyCheck = require('../check/insertBodyCheck');
 var db = require('../model/db');
 const oneMeter = require('../config/distantConfig');
-const fcm = require('../middleware/fcm');
 const isHead = require('../check/isHead');
 const existUser = require('../check/existUser');
 const isBaned = require('../check/isBaned')
@@ -279,14 +278,35 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
     try {
         const userId = req.token.sub;
         const roomId = req.params.roomid;
-        let sql = `DELETE FROM member WHERE AccountID = (SELECT AccountID FROM account WHERE id = ?) AND RoomID = ?`;
-        let param = [userId, roomId];
-
-        await db.executePreparedStatement(sql, param);
+        let nicknameRow = await db.executePreparedStatement(`SELECT NickName FROM member WHERE AccountID = (SELECT AccountID FROM account WHERE id = ?) AND RoomID = ?`,[userId, roomId])
+        if(nicknameRow.length == 0) {
+            throw "해당 유저는 방에 없습니다."
+        }
+        let content = nicknameRow[0].NickName + " 님이 나가셨습니다."
+        let sql = `INSERT INTO chatting(content, RoomID, MemberID, Type) VALUES(?,?,(SELECT member.MemberID FROM member join account ON account.AccountID = member.AccountID WHERE account.id = ? AND member.RoomID = ?),'in')`;
+        let param = [content,roomId, userId, roomId];
+        let feild = await db.executePreparedStatement(sql, param);
+        sql = `SELECT chatting.content, chatting.RoomID, chatting.Timestamp, member.nickname FROM chatting join member on member.MemberID = chatting.MemberID WHERE ChattingID = ?`;
+        let result = await db.executePreparedStatement(sql, [feild.insertId]);
+        
+        sql = `DELETE FROM member WHERE AccountID = (SELECT AccountID FROM account WHERE id = ?) AND RoomID = ?`;
+        param = [userId, roomId];
+        // await db.executePreparedStatement(sql, param);
+        
+        res.app.get('io').to(roomId).emit('message',{
+            type:"in",
+            content:result[0].content,
+            roomId:result[0].RoomID,
+            nickname:result[0].nickname,
+            timestamp:result[0].Timestamp,
+            messageID:feild.insertId
+        });
         res.status(200).json({
             msg : "OK"
         })
+        
     } catch(e) {
+        console.log(e);
         res.status(400).json({
             msg : e
         })
@@ -336,6 +356,14 @@ router.put('/:roomid/inherit', decode, async(req, res) => {
         res.status(200).json({
             msg : "OK"
         })
+        res.app.get('io').to(roomId).emit('message',{
+            type:"leave",
+            content:result[0].content,
+            roomId:result[0].RoomID,
+            nickname:nickname,
+            timestamp:result[0].Timestamp,
+            messageID:feild.insertId
+        });
     } catch(e) {
         res.status(400).json({
             msg : e
