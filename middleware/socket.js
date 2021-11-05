@@ -36,13 +36,13 @@ module.exports.init=(io)=>{
                 let params=[data.content,data.RoomID,row[0].MemberID];
                 const field= await(db.executePreparedStatement(sql,params).rows);
                 console.log(field);
+                const timestamp = await (db.executePreparedStatement("select timestamp FROM chatting WHERE id = ?",[filed.insertId]).rows)
                 io.broadcast.to(data.RoomID).emit('message',{
                     type:"msg",
                     content:data.content,
                     roomID:data.RoomID,
                     nickname:row[0],
-                    memberID:data.MemberID,
-                    timestamp:data.timestamp,
+                    timestamp:timestamp[0].timestamp,
                     messageID:field.insertId
                 })
                 //셀렉트로 전체 찾아서 푸쉬
