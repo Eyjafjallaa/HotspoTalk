@@ -113,9 +113,14 @@ router.get("/", decode, async (req, res) => {
           result.data = result;
           result.msg = "OK";
           for (i in apiResult) {
-            sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION `;
+            sql += `SELECT room.RoomID, room.RoomName, room.MemberLimit, room.Address ,room.AreaType 
+            FROM room LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
+            WHERE address like '?'
+            and member.RoomID <> ALL(select RoomID from hotsix.member WHERE AccountID = ?)
+            union`;
           }
           sql = sql.substring(0, sql.length - 6);
+          sql += "group by room.RoomID"
           let result2 = await db.executePreparedStatement(sql, apiResult);
     
           for (a of result2) {
