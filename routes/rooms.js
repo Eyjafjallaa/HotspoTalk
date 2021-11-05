@@ -227,6 +227,7 @@ router.post('/:roomid', decode, async(req, res) => { //방 입장
         res.status(200).json({
             msg : "OK"
         })
+        // insert 해서 chatting에 메세지 남기고 그다음 밑에 io에 보내기
         res.app.get('io').to(roomId).emit('message',{
             type:"in",
         });
@@ -425,4 +426,6 @@ router.get('/:roomId', async(req, res) => {
     }
 })
 
+
+router.delete()
 module.exports = router;
