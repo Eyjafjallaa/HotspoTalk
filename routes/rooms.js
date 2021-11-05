@@ -99,27 +99,34 @@ router.get("/", decode, async (req, res) => {
         result = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
       }
       let apiResult = await naver.get(latitude, longitude);
+      if(!apiResult) {
+        if(result.length == 0) {
+            res.status(200).json({msg : "검색된 방이 없습니다."});
+            return;
+        }
+      } else {
+          sql = "";
+          for (i in apiResult) {
+            sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION `;
+          }
+          sql = sql.substring(0, sql.length - 6);
+          let result2 = await db.executePreparedStatement(sql, apiResult);
+    
+          for (a of result2) {
+            result.push({
+              roomID: a.RoomID,
+              roomName: a.RoomName,
+              memberLimit: a.MemberLimit,
+              address: a.Address,
+              areaType: a.AreaType,
+            });
+          }
+          if (result.length == 0) {
+            result = { msg: "검색된 방이 없습니다." };
+          }
+        }
+        res.status(200).json(result);
 
-      sql = "";
-      for (i in apiResult) {
-        sql += `SELECT RoomID, RoomName, MemberLimit, Address ,AreaType FROM room WHERE address like ? UNION `;
-      }
-      sql = sql.substring(0, sql.length - 6);
-      let result2 = await db.executePreparedStatement(sql, apiResult);
-
-      for (a of result2) {
-        result.push({
-          roomID: a.RoomID,
-          roomName: a.RoomName,
-          memberLimit: a.MemberLimit,
-          address: a.Address,
-          areaType: a.AreaType,
-        });
-      }
-      if (result.length == 0) {
-        result = { msg: "검샘된 방이 없습니다." };
-      }
-      res.status(200).json(result);
     } catch (e) {
       res.status(400).json({
         msg: e,

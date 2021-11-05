@@ -3,7 +3,7 @@ const request = require('request')
 
 exports.get = (latitude, longitude) => {
     let options = {
-        url: 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=' + longitude + ',' + latitude + '&output=json&orders=addr&orders=admcode&orders=roadaddr',
+        url: 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=' + longitude +','+ latitude + '&output=json&orders=roadaddr',
         method: 'GET',
         headers: {
             'X-NCP-APIGW-API-KEY-ID':'t0onsa248e', //앱 등록 시 발급받은 Client ID
@@ -14,10 +14,13 @@ exports.get = (latitude, longitude) => {
         request(options, async (err, res, body) => {
             if(err) {
                 throw err;
-            }
-            
+            }     
             try {
                 let reqResult = JSON.parse(body);
+                if(reqResult.status.code !== 0) {
+                    resolve(false);
+                    return
+                } 
                 let result = [];
                 if(reqResult.results[0].region.area4.name !== "") {
                     result.push(reqResult.results[0].region.area1.name + " " 
