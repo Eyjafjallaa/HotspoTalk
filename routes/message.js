@@ -20,22 +20,19 @@ router.get('/', (req, res) => {
 
     let messageData = JSON.stringify({
       title : title,
-      message: body,
+      body: body,
       userId: "testuser",
       roomId : 46
     })
     let message = { //넣어야할 내용 : 시간 보낸사람 내용 방번호
-      name : '1',
+      // name : '1',
       data: {messageData},
       notification: {
         title: title,
-        message: body,
-        userId: "testuser",
-        roomId : 46
+        body: body,
       },
       token: target_token,
   }
-  console.log(message);
   admin
     .messaging()
     .send(message)
