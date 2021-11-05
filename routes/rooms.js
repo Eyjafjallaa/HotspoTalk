@@ -208,7 +208,7 @@ router.post('/:roomid', decode, async(req, res) => { //방 입장
         // let sql2 = "SELE"
         param = [roomId];
         let existPW = await db.executePreparedStatement(sql, param);
-        if(existPW.length == 0) {
+        if(existPW.length == 0 || existPW.RoomPW == '') {
             throw "방아이디와 일치하는 방이 없습니다.";
         }
         if(existPW[0].RoomPW !== '') { //비번이 존재하는지 확인
