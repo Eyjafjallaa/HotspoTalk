@@ -27,10 +27,7 @@ router.get("/", decode, async (req, res) => {
 
       let result = await db.executePreparedStatement(sql, param);
       if (result.length == 0) {
-        res.status(200).json({
-          msg: "없음",
-          data : []
-        });
+        res.status(200).json([]);
       } else {
         let arr = [];
         for (i in result) {
@@ -102,7 +99,7 @@ router.get("/", decode, async (req, res) => {
       let apiResult = await naver.get(latitude, longitude);
       if(!apiResult) {
         if(result.length == 0) {
-            res.status(200).json({msg : "검색된 방이 없습니다.",  data : []});
+            res.status(200).json([]);
             return;
         }
       } else {
@@ -125,16 +122,10 @@ router.get("/", decode, async (req, res) => {
             });
           }
           if (result.length == 0) {
-              resData = {
-                  msg : "검색된 방이 없습니다.",
-                  data : []
-              }
+              resData = [];
           }
           else {
-            resData = {
-                msg : "OK",
-                data : result
-            }
+            resData = result;
           }
         }
         res.status(200).json(resData);
