@@ -6,7 +6,7 @@ const tokendecode = (req,res,next) => {
     let token = req.get('authorization');
     jwt.verify(token, secret, (err, data) => {
         if(err){
-            res.status(401).json({err:err});
+            res.status(403).json({err:err});
             return;
         }    
         req.token = data;

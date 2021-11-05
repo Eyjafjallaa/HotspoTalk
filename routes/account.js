@@ -28,7 +28,7 @@ router.post('/signup', async (req, res, next)=> {
                 if(err) reject(err);
                 try {
                     await db.executePreparedStatement("INSERT INTO account(id, password, Devtoken,salt) values(?, ?, ?, ?)",
-                    [req.body.id, key.toString('base64'), req.body.Devtoken, salt]);
+                    [req.body.id, key.toString('base64'), req.body.devToken, salt]);
                 } catch (error) {
                     reject(error);   
                 }
@@ -62,7 +62,6 @@ router.post('/signup', async (req, res, next)=> {
 router.post('/login', async (req, res, next) => {
   const id = req.body.id;
   const password = req.body.password;
-  
   let sql = "SELECT salt FROM account WHERE id = ?";
   const param = [id];
   let result = await db.executePreparedStatement(sql, param);

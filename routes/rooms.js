@@ -142,6 +142,7 @@ router.get("/", decode, async (req, res) => {
 //longitude 경도 latitude 위도   areaType : 0 반경 1 주소 areaDetail : type이 0일때는 m / 1일 떄는 0이면 동 1이면 상위
 //35.664753, 128.422895
 router.post('/', decode, async(req, res) => {
+    console.log(req.body);
     try{
         const userId = req.token.sub;
         const body = req.body;
