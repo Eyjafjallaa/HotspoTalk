@@ -30,10 +30,10 @@ module.exports.init=(io)=>{
         socket.on('message',async (data)=>{
             try {
                 //MEMBERID 토큰으로 바꿔서
-                const userId = await socketTokendecode(data.MemberID);
+                const userId = await socketTokendecode(data.Token);
                 const row = await(db.executePreparedStatement("SELECT member.NickName, member.MemberID from member left join account on account.AccountID = member.AccountID where RoomID =? and account.id=?",[data.roomID,userId]).rows);
-                let sql="INSERT INTO chatting (content, RoomID, MemberID) VALUES(?,?,)"
-                let params=[data.content,data.RoomID,row[0].MemberID];
+                let sql="INSERT INTO chatting (content, RoomID, MemberID,Type) VALUES(?,?,?,?)"
+                let params=[data.content,data.RoomID,row[0].MemberID,"msg"];
                 const field= await(db.executePreparedStatement(sql,params).rows);
                 console.log(field);
                 const timestamp = await (db.executePreparedStatement("select timestamp FROM chatting WHERE id = ?",[filed.insertId]).rows)

@@ -181,6 +181,7 @@ router.post('/', decode, async(req, res) => {
             });
         }
     }catch(e) {
+        console.log(e);
         res.status(400).json({
             msg : e
         })
@@ -411,7 +412,7 @@ router.get('/:roomId', async(req, res) => {
         const roomId = req.params.roomId;
         const {start, count} = req.query;
     
-        let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp
+        let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID
         FROM chatting 
         left JOIN member ON chatting.MemberID = member.MemberID 
         WHERE chatting.RoomID = ?
@@ -426,7 +427,9 @@ router.get('/:roomId', async(req, res) => {
             arr.push({
                 nickName : i.NickName,
                 content : i.content,
-                timeStamp : i.TimeStamp
+                timeStamp : i.TimeStamp,
+                type : i.Type,
+                messageID:i.ChattingID
             })
         }
 
@@ -439,5 +442,5 @@ router.get('/:roomId', async(req, res) => {
 })
 
 
-router.delete()
+
 module.exports = router;
