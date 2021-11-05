@@ -192,6 +192,7 @@ router.post('/:roomid', decode, async(req, res) => { //방 입장
         let roomId = req.params.roomid;
         let userId = req.token.sub;
         let { nickname, password } = req.body;
+        console.log(roomId, userId, nickname, password);
 
         await isBaned.check(roomId, userId);
 
@@ -227,9 +228,20 @@ router.post('/:roomid', decode, async(req, res) => { //방 입장
         res.status(200).json({
             msg : "OK"
         })
+        sql = `INSERT INTO chatting(content, RoomID, MemberID, Type) VALUES('`+ nickname +` 님이 들어오셨습니다.',?,(SELECT member.MemberID FROM member join account ON account.AccountID = member.AccountID WHERE account.id = ? AND member.RoomID = ?),'in')`;
+        let feild = await db.executePreparedStatement(sql, [roomId, userId, roomId]);
+        sql = `SELECT * FROM chatting WHERE ChattingID = ?`;
+        let result = await db.executePreparedStatement(sql, [feild.insertId]);
+        
         // insert 해서 chatting에 메세지 남기고 그다음 밑에 io에 보내기
+        
         res.app.get('io').to(roomId).emit('message',{
             type:"in",
+            content:result[0].content,
+            roomId:result[0].RoomID,
+            nickname:nickname,
+            timestamp:result[0].Timestamp,
+            messageID:feild.insertId
         });
     } catch(e) {
         console.log(e);
@@ -427,5 +439,5 @@ router.get('/:roomId', async(req, res) => {
 })
 
 
-router.delete()
+// router.delete()
 module.exports = router;
