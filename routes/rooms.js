@@ -15,7 +15,7 @@ router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어�
     if(Object.keys(req.query).length === 0 && req.query.constructor === Object) { //파라미터가 없을 경우 -> 들어갔던 방
         try {
             let userId = req.token.sub;
-            let sql = `SELECT room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, member.IsHead 
+            let sql = `SELECT room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, member.IsHead
                         FROM account 
                         join member join room 
                         ON account.AccountID = member.AccountID 
@@ -31,13 +31,25 @@ router.get('/', decode, async(req, res) => { //들어갈 수 있는 방 들어�
             } else {
                 let arr = [];
                 for(i in result) {
-                    arr.push({
-                        roomId : result[i].RoomId,
-                        roomName : result[i].RoomName,
-                        roomPW : result[i].RoomPW,
-                        roomRange : result[i].AreaDetail,
-                        isHead : result[i].IsHead
-                    });
+                    if(result[i].AreaType == 1) {
+                        arr.push({
+                            roomId : result[i].RoomId,
+                            roomName : result[i].RoomName,
+                            roomPW : result[i].RoomPW,
+                            areaType : result[i].AreaType,
+                            address : result[i].Address,
+                            isHead : result[i].IsHead
+                        });
+                    } else {
+                        arr.push({
+                            roomId : result[i].RoomId,
+                            roomName : result[i].RoomName,
+                            roomPW : result[i].RoomPW,
+                            areaType : result[i].AreaType,
+                            roomRange : result[i].AreaDetail,
+                            isHead : result[i].IsHead
+                        });
+                    }
                 }
                 res.status(200).json(arr)
             }
@@ -171,13 +183,22 @@ router.post('/:roomid', decode, async(req, res) => { //방 입장
 
         await isBaned.check(roomId, userId);
 
-        let sql = "SELECT RoomPW FROM room WHERE RoomID = ?";
-        let param = [roomId];
+        let sql = `SELECT count(*) as able FROM room WHERE RoomID = ? AND MemberLimit > (SELECT count(*) FROM member WHERE RoomID = ?);`;
+        let param = [roomId, roomId];
+        let limit = await db.executePreparedStatement(sql, param);
+        if(limit[0].able == 0) {
+            throw "방이 가득찼습니다.";
+        }
+
+        sql = "SELECT RoomPW FROM room WHERE RoomID = ?";
+
+        // let sql2 = "SELE"
+        param = [roomId];
         let existPW = await db.executePreparedStatement(sql, param);
         if(existPW.length == 0) {
             throw "방아이디와 일치하는 방이 없습니다.";
         }
-        if(existPW[0].RoomPW !== '') {
+        if(existPW[0].RoomPW !== '') { //비번이 존재하는지 확인
             let sql =  `SELECT count(*) AS len FROM room WHERE RoomID = ? AND RoomPW = ?`;
             let param = [roomId, password];
 
