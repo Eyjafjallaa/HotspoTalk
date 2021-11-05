@@ -76,10 +76,15 @@ router.get("/", decode, async (req, res) => {
           oneMeter * area[i].AreaDetail,
           longitude,
           oneMeter * area[i].AreaDetail,
+          req.token.sub
         ];
-        sql = `SELECT * FROM hotsix.room WHERE 
+        sql = `SELECT distinct room.RoomID, room.RoomName, room.MemberLimit, room.AreaDetail, room.AreaType
+            FROM hotsix.room 
+            LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
+            WHERE 
             Latitude < (? + ?) AND Latitude > (? - ?) AND
-            Longitude < (? + ?) AND Longitude > (? - ?);`;
+            Longitude < (? + ?) AND Longitude > (? - ?) 
+            AND member.AccountID<>?`;
 
         let rs = await db.executePreparedStatement(sql, param);
         for (a in rs) {
