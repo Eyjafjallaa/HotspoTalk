@@ -114,8 +114,9 @@ router.get("/", decode, async (req, res) => {
           for (i in apiResult) {
             sql += `SELECT room.RoomID, room.RoomName, room.MemberLimit, room.Address ,room.AreaType 
             FROM room LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
-            WHERE address like '?'
-            and member.RoomID <> ALL(select RoomID from hotsix.member WHERE AccountID = ?)
+            left join account on account.AccountID=member.AccountID
+            WHERE address like ?
+            and member.RoomID <> ALL(select RoomID from hotsix.member WHERE Account.id = ?)
             union `;
           }
           //[
@@ -128,6 +129,7 @@ router.get("/", decode, async (req, res) => {
             param.push(i);
             param.push(userId);
           }
+        //   console.log(param)
           let result2 = await db.executePreparedStatement(sql, param);
     
           for (a of result2) {
