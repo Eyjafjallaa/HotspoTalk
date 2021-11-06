@@ -51,8 +51,10 @@ module.exports.init=(io)=>{
                     timestamp:timestamp[0].timestamp,
                     messageID:field.insertId
                 })
-                //title, message, sender, roomId, timestamp, messageID, userId
-                await fcm.send("HotspoTalk 메시지",data.content, data.roomId,data.timestamp , field.insertId, userId);
+
+
+                await fcm.send("HotspoTalk 메시지", data.content, data.roomId, timestamp[0].timestamp, field.insertId, userId);
+
             } catch (error) {
                 console.log('socket')
                 console.log(error)
