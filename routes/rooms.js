@@ -526,7 +526,7 @@ router.get('/:roomId', decode,async(req, res) => {
                 timeStamp : i.Timestamp,
                 type : i.Type,
                 messageID:i.ChattingID,
-                isMe : i.isMe
+                isMe : isMe
             })
         }
 
