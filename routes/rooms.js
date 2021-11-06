@@ -501,18 +501,19 @@ router.get('/:roomId', decode,async(req, res) => {
         const {start, count} = req.query;
         
         let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID,
-        if(member.AccountID = account.id=? ,'T','F') AS isMe
+        if(account.id = ? ,'T','F') AS isMe
         FROM chatting 
         left JOIN member ON chatting.MemberID = member.MemberID 
         left JOIN account ON account.AccountID = member.AccountID
         WHERE chatting.RoomID = ?
         ORDER BY Timestamp 
         LIMIT ?, ?;`
-    
-        let param = [userID,roomId, start, count];
+        
+        let param = [userID,parseInt(roomId), parseInt(start), parseInt(count)];
+        // console.log(param)
 
         let result = await db.executePreparedStatement(sql, param);
-        console.log(result);
+        // console.log(result);
         let arr = [];
         for(i of result) {
             let isMe = false;
