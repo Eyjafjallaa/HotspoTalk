@@ -65,7 +65,6 @@ router.get("/", decode, async (req, res) => {
       let result = [];
       let latitude = parseFloat(req.query.latitude);
       let longitude = parseFloat(req.query.longitude);
-
       for (i in area) {
         let param = [
           latitude,
@@ -83,7 +82,7 @@ router.get("/", decode, async (req, res) => {
             LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             WHERE 
             Latitude < (? + ?) AND Latitude > (? - ?) AND
-            Longitude < (? + ?) AND Longitude > (? - ?) 
+            Longitude < (? + ?) AND Longitude > (? - ?) AND
             member.RoomID <> 
             ALL(select RoomID from hotsix.member WHERE AccountID = ?)
             group by room.RoomID`;
@@ -117,7 +116,7 @@ router.get("/", decode, async (req, res) => {
             FROM room LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             WHERE address like '?'
             and member.RoomID <> ALL(select RoomID from hotsix.member WHERE AccountID = ?)
-            union`;
+            union `;
           }
           //[
           //api result 1, token.sub, api result 2, token.sub ... ...
@@ -150,6 +149,7 @@ router.get("/", decode, async (req, res) => {
         res.status(200).json(resData);
 
     } catch (e) {
+        console.log(e);
       res.status(400).json({
         msg: e,
       });
