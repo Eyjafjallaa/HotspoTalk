@@ -302,20 +302,28 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
     }
 })
 
-router.get('/:roomid/member', async(req, res) => { //멤버 목록
+router.get('/:roomid/member', decode, async(req, res) => { //멤버 목록
     try {
         const roomId = req.params.roomid;
+        const userID = req.token.sub;
     
-        let sql = `SELECT account.id, member.nickName, member.IsHead FROM member JOIN account ON account.AccountID = member.AccountID WHERE member.RoomID = ?;`;
-        let param = [roomId];
+        let sql = `SELECT account.id, member.nickName, member.IsHead,
+        if(account.id = ?,'T','F') AS isMe
+        FROM member JOIN account ON account.AccountID = member.AccountID WHERE member.RoomID = ?;`;
+        let param = [userID,roomId];
     
         let result = await db.executePreparedStatement(sql, param);
         arr = [];
         for(i in result) {
+            let isMe = false;
+            if(result[i].isMe == "T") {
+                isMe = true;
+            }
             arr.push({
                 userID : result[i].id,
                 nickName : result[i].nickName,
-                isHead : result[i].IsHead
+                isHead : result[i].IsHead,
+                isMe : isMe
             })
         }
         res.status(200).json(arr);
