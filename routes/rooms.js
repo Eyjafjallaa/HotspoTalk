@@ -209,13 +209,12 @@ router.post('/', decode, async(req, res) => {
     }
 })
 
-router.post('/:roomid', decode, async(req, res) => { //방 입장
+router.post('/in/:roomid', decode, async(req, res) => { //방 입장
     try {
         let roomId = req.params.roomid;
         let userId = req.token.sub;
         let { nickname, password } = req.body;
         console.log(roomId, userId, nickname, password);
-
         await isBaned.check(roomId, userId);
 
         let sql = `SELECT count(*) as able FROM room WHERE RoomID = ? AND MemberLimit > (SELECT count(*) FROM member WHERE RoomID = ?);`;
