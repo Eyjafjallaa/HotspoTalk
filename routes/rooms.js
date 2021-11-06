@@ -494,14 +494,17 @@ router.put('/ban', decode, async(req, res) => {
     }
 })
 
-router.get('/:roomId', async(req, res) => {
+router.get('/:roomId', decode,async(req, res) => {
     try {
+        const userID = req.token.sub;
         const roomId = req.params.roomId;
         const {start, count} = req.query;
         
         let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID
+        if(member.AccountID = account.id=? ,'T','F') AS isMe
         FROM chatting 
         left JOIN member ON chatting.MemberID = member.MemberID 
+        left JOIN account ON account.AccountID = member.AccountID
         WHERE chatting.RoomID = ?
         ORDER BY Timestamp 
         LIMIT ?, ?;`
@@ -512,12 +515,17 @@ router.get('/:roomId', async(req, res) => {
         console.log(result);
         let arr = [];
         for(i of result) {
+            let isMe = false;
+            if(i.isMe == 'T') {
+                isMe = true;
+            }
             arr.push({
                 nickName : i.NickName,
                 content : i.content,
                 timeStamp : i.Timestamp,
                 type : i.Type,
-                messageID:i.ChattingID
+                messageID:i.ChattingID,
+                isMe : i.isMe
             })
         }
 
