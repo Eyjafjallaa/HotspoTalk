@@ -78,7 +78,7 @@ router.get("/", decode, async (req, res) => {
           req.token.sub
         ];
         sql = `SELECT distinct room.RoomID, room.RoomName, room.MemberLimit, room.AreaDetail, room.AreaType,
-            if(room.RoomPW<>'','T','Y') AS existPW
+            if(room.RoomPW<>'','T','F') AS existPW
             FROM hotsix.room 
             LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             WHERE 
@@ -114,7 +114,7 @@ router.get("/", decode, async (req, res) => {
           result.msg = "OK";
           for (i in apiResult) {
             sql += `SELECT room.RoomID, room.RoomName, room.MemberLimit, room.Address ,room.AreaType,
-            if(room.RoomPW<>'','T','Y') AS existPW  
+            if(room.RoomPW<>'','T','F') AS existPW  
             FROM room LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             left join account on account.AccountID=member.AccountID
             WHERE address like ?
