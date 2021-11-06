@@ -38,7 +38,7 @@ router.get("/", decode, async (req, res) => {
                 existPW = true;
             }
             arr.push({
-              roomId: result[i].RoomID,
+              roomID: result[i].RoomID,
               roomName: result[i].RoomName,
               roomPW: result[i].RoomPW,
               areaType: result[i].AreaType,
@@ -51,7 +51,7 @@ router.get("/", decode, async (req, res) => {
                 existPW = true;
             }
             arr.push({
-              roomId: result[i].RoomID,
+              roomID: result[i].RoomID,
               roomName: result[i].RoomName,
               roomPW: result[i].RoomPW,
               areaType: result[i].AreaType,
