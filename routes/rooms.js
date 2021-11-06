@@ -313,7 +313,7 @@ router.get('/:roomid/member', async(req, res) => { //멤버 목록
         arr = [];
         for(i in result) {
             arr.push({
-                userId : result[i].id,
+                userID : result[i].id,
                 nickName : result[i].nickName,
                 isHead : result[i].IsHead
             })
