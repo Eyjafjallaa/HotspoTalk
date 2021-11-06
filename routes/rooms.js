@@ -500,7 +500,7 @@ router.get('/:roomId', decode,async(req, res) => {
         const roomId = req.params.roomId;
         const {start, count} = req.query;
         
-        let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID
+        let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID,
         if(member.AccountID = account.id=? ,'T','F') AS isMe
         FROM chatting 
         left JOIN member ON chatting.MemberID = member.MemberID 
@@ -509,7 +509,7 @@ router.get('/:roomId', decode,async(req, res) => {
         ORDER BY Timestamp 
         LIMIT ?, ?;`
     
-        let param = [roomId, start, count];
+        let param = [userID,roomId, start, count];
 
         let result = await db.executePreparedStatement(sql, param);
         console.log(result);
