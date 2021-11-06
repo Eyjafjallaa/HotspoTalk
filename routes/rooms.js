@@ -498,7 +498,7 @@ router.get('/:roomId', async(req, res) => {
     try {
         const roomId = req.params.roomId;
         const {start, count} = req.query;
-    
+        
         let sql = `SELECT member.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID
         FROM chatting 
         left JOIN member ON chatting.MemberID = member.MemberID 
@@ -509,12 +509,13 @@ router.get('/:roomId', async(req, res) => {
         let param = [roomId, start, count];
 
         let result = await db.executePreparedStatement(sql, param);
+        console.log(result);
         let arr = [];
         for(i of result) {
             arr.push({
                 nickName : i.NickName,
                 content : i.content,
-                timeStamp : i.TimeStamp,
+                timeStamp : i.Timestamp,
                 type : i.Type,
                 messageID:i.ChattingID
             })
