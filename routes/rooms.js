@@ -90,12 +90,17 @@ router.get("/", decode, async (req, res) => {
 
         let rs = await db.executePreparedStatement(sql, param);
         for (a in rs) {
+            let existPW = false;
+            if(rs[a].existPW == 'T') {
+                existPW = true;
+            }
           result.push({
             roomID: rs[a].RoomID,
             roomName: rs[a].RoomName,
             memberLimit: rs[a].MemberLimit,
             roomRange: rs[a].AreaDetail,
             areaType: rs[a].AreaType,
+            existPW: existPW
           });
         }
       }
@@ -135,12 +140,17 @@ router.get("/", decode, async (req, res) => {
           let result2 = await db.executePreparedStatement(sql, param);
     
           for (a of result2) {
+            let existPW = false;
+            if(a.existPW == "T") {
+                existPW = true;
+            }
             result.push({
               roomID: a.RoomID,
               roomName: a.RoomName,
               memberLimit: a.MemberLimit,
               address: a.Address,
               areaType: a.AreaType,
+              existPW: existPW
             });
           }
           if (result.length == 0) {
