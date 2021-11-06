@@ -8,20 +8,24 @@ var db = require('../model/db');
 
 exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
 
-    let sql = "SELECT Devtoken, NickName FROM member JOIN account ON member.AccountID = account.AccountID WHERE roomID = ? AND account.id <> ?;"
+    let sql = "SELECT Devtoken FROM member JOIN account ON member.AccountID = account.AccountID WHERE RoomID = ? AND account.id <> ?;";
     let param = [roomId, userId];
     console.log(param)
-    let result = await db.executePreparedStatement(sql, param);
-    if(result.length == 0) {
+    let dev = await db.executePreparedStatement(sql, param);
+    if(dev.length == 0) {
         return;
     }
+    sql = `SELECT NickName FROM member WHERE AccountID = (SELECT AccountID FROM account WHERE id = ?) AND RoomID = ?`;
+    param = [userId, roomId];
+    let nickname = await db.executePreparedStatement(sql, param);
+
     let target_tokens = []
     for(i in result) {
-        target_tokens.push(result[i].Devtoken);
+        target_tokens.push(dev[i].Devtoken);
     }
     messageData = JSON.stringify({
         title : title,
-        sender : sender,
+        sender : nickname[0].NickName, 
         timestamp : timestamp,
         message: message,
         roomId : roomId
