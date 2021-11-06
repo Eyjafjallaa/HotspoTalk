@@ -77,7 +77,8 @@ router.get("/", decode, async (req, res) => {
           oneMeter * area[i].AreaDetail,
           req.token.sub
         ];
-        sql = `SELECT distinct room.RoomID, room.RoomName, room.MemberLimit, room.AreaDetail, room.AreaType
+        sql = `SELECT distinct room.RoomID, room.RoomName, room.MemberLimit, room.AreaDetail, room.AreaType,
+            if(room.RoomPW<>'','T','Y') AS existPW
             FROM hotsix.room 
             LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             WHERE 
@@ -112,7 +113,8 @@ router.get("/", decode, async (req, res) => {
           result.data = result;
           result.msg = "OK";
           for (i in apiResult) {
-            sql += `SELECT room.RoomID, room.RoomName, room.MemberLimit, room.Address ,room.AreaType 
+            sql += `SELECT room.RoomID, room.RoomName, room.MemberLimit, room.Address ,room.AreaType,
+            if(room.RoomPW<>'','T','Y') AS existPW  
             FROM room LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             left join account on account.AccountID=member.AccountID
             WHERE address like ?
@@ -214,7 +216,7 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
         let roomId = req.params.roomid;
         let userId = req.token.sub;
         let { nickname, password } = req.body;
-        console.log(roomId, userId, nickname, password);
+        console.log(req.body);
         await isBaned.check(roomId, userId);
 
         let sql = `SELECT count(*) as able FROM room WHERE RoomID = ? AND MemberLimit > (SELECT count(*) FROM member WHERE RoomID = ?);`;
