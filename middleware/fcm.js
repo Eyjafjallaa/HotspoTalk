@@ -20,7 +20,7 @@ exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
     let nickname = await db.executePreparedStatement(sql, param);
 
     let target_tokens = []
-    for(i in result) {
+    for(i in dev) {
         target_tokens.push(dev[i].Devtoken);
     }
     messageData = JSON.stringify({

@@ -30,7 +30,7 @@ module.exports.init=(io)=>{
 
         socket.on('message',async (data)=>{
             data = JSON.parse(data);
-            // console.log(data)
+            console.log('message')
             try {
                 //MEMBERID 토큰으로 바꿔서
                 const userId = await socketTokendecode(data.token);

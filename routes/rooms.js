@@ -350,7 +350,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
         
         sql = `DELETE FROM member WHERE AccountID = (SELECT AccountID FROM account WHERE id = ?) AND RoomID = ?`;
         param = [userId, roomId];
-        // await db.executePreparedStatement(sql, param);
+        await db.executePreparedStatement(sql, param);
         
         res.app.get('io').to(roomId).emit('message',{
             type:"out",
