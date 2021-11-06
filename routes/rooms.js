@@ -176,12 +176,19 @@ router.get("/", decode, async (req, res) => {
 //35.664753, 128.422895
 router.post('/', decode, async(req, res) => {
     console.log(req.body);
+    if(req.body.password==undefined){
+        req.body.password="";
+    }
     try{
         const userId = req.token.sub;
         const body = req.body;
         if(body.areaType == 1) {
             let sql = "INSERT INTO room(RoomName, RoomPW, MemberLimit, AreaType, Address) values(?,?,?,?,?)";
             let param = [body.name, body.password, body.memberLimit, body.areaType, body.address];
+            for(var x in param){
+                if(param[x]==undefined)
+                    param[x] = ""; 
+            }
             const roomId = await db.executePreparedStatement(sql, param);
             
             sql = "SELECT AccountID FROM account WHERE id = ?;"
