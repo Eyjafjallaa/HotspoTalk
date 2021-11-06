@@ -353,7 +353,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
         // await db.executePreparedStatement(sql, param);
         
         res.app.get('io').to(roomId).emit('message',{
-            type:"leave",
+            type:"out",
             content:result[0].content,
             roomId:result[0].RoomID,
             nickname:result[0].nickname,
