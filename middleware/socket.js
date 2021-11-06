@@ -6,6 +6,7 @@ const isHead = require('../check/isHead');
 const existUser = require('../check/existUser');
 const socketTokendecode = require('../middleware/socketToken');
 
+
 module.exports.init=(io)=>{
     console.log('Init socket.io');
 
@@ -28,27 +29,33 @@ module.exports.init=(io)=>{
         
 
         socket.on('message',async (data)=>{
+            data = JSON.parse(data);
+            // console.log(data)
             try {
                 //MEMBERID 토큰으로 바꿔서
-                const userId = await socketTokendecode(data.Token);
-                const row = await(db.executePreparedStatement("SELECT member.NickName, member.MemberID from member left join account on account.AccountID = member.AccountID where RoomID =? and account.id=?",[data.roomID,userId]).rows);
+                const userId = await socketTokendecode(data.token);
+                // console.log(userId,data)
+                const row = await db.executePreparedStatement("SELECT member.NickName, member.MemberID from member left join account on account.AccountID = member.AccountID where RoomID =? and account.id=?",[data.roomId,userId]);
+                // console.log(row);
                 let sql="INSERT INTO chatting (content, RoomID, MemberID,Type) VALUES(?,?,?,?)"
-                let params=[data.content,data.RoomID,row[0].MemberID,"msg"];
-                const field= await(db.executePreparedStatement(sql,params).rows);
-                console.log(field);
-                const timestamp = await (db.executePreparedStatement("select timestamp FROM chatting WHERE id = ?",[filed.insertId]).rows)
-                io.broadcast.to(data.RoomID).emit('message',{
+                let params=[data.content,data.roomId,row[0].MemberID,"msg"];
+                // console.log(params)
+                const field= await db.executePreparedStatement(sql,params);
+                // console.log(field);
+                const timestamp = await db.executePreparedStatement("select Timestamp FROM chatting WHERE ChattingID = ?",[field.insertId])
+                socket.broadcast.to(data.RoomID).emit('message',{
                     type:"msg",
                     content:data.content,
-                    roomID:data.RoomID,
+                    roomID:data.roomId,
                     nickname:row[0],
                     timestamp:timestamp[0].timestamp,
                     messageID:field.insertId
                 })
-                //셀렉트로 전체 찾아서 푸쉬
-                //이후 푸쉬 및 재확인
-                await fcm.send("HotspoTalk 메시지",data.content,data.RoomID,data.timestamp , field.insertId, userId);
+                
+                // await fcm.send("HotspoTalk 메시지",data.content,data.roomId,data.timestamp , field.insertId, userId);
             } catch (error) {
+                console.log('socket')
+                console.log(error)
                 socket.emit('err', {
                     msg : error
                 })
