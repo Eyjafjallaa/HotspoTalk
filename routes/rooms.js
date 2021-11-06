@@ -16,37 +16,48 @@ router.get("/", decode, async (req, res) => {
   if (Object.keys(req.query).length === 0 && req.query.constructor === Object) {
     //파라미터가 없을 경우 -> 들어갔던 방
     try {
-      let sql = `SELECT room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, member.IsHead
-                        FROM account 
-                        join member join room 
-                        ON account.AccountID = member.AccountID 
-                        AND room.RoomID = member.roomID 
-                        WHERE account.id = ?;`;
+      let sql = `SELECT room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, member.IsHead,
+                if(room.RoomPW<>'','T','F') AS existPW
+                FROM account
+                join member join room 
+                ON account.AccountID = member.AccountID 
+                AND room.RoomID = member.roomID 
+                WHERE account.id = ?;`;
       let param = [userId];
 
       let result = await db.executePreparedStatement(sql, param);
+
       if (result.length == 0) {
         res.status(200).json([]);
       } else {
         let arr = [];
         for (i in result) {
+            let existPW = false;
           if (result[i].AreaType == 1) {
+            if(result[i].existPW == 'T') {
+                existPW = true;
+            }
             arr.push({
-              roomId: result[i].RoomId,
+              roomId: result[i].RoomID,
               roomName: result[i].RoomName,
               roomPW: result[i].RoomPW,
               areaType: result[i].AreaType,
               address: result[i].Address,
               isHead: result[i].IsHead,
+              existPW: existPW
             });
           } else {
+            if(result[i].existPW == 'T') {
+                existPW = true;
+            }
             arr.push({
-              roomId: result[i].RoomId,
+              roomId: result[i].RoomID,
               roomName: result[i].RoomName,
               roomPW: result[i].RoomPW,
               areaType: result[i].AreaType,
               roomRange: result[i].AreaDetail,
               isHead: result[i].IsHead,
+              existPW: existPW
             });
           }
         }
