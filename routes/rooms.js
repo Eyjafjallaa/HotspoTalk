@@ -521,9 +521,9 @@ router.get('/:roomId', decode,async(req, res) => {
                 isMe = true;
             }
             arr.push({
-                nickName : i.NickName,
+                nickname : i.NickName,
                 content : i.content,
-                timeStamp : i.Timestamp,
+                timestamp : i.Timestamp,
                 type : i.Type,
                 messageID:i.ChattingID,
                 isMe : isMe
