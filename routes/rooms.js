@@ -511,7 +511,7 @@ router.get('/:roomId', decode,async(req, res) => {
         const roomId = req.params.roomId;
         const {start, count} = req.query;
         
-        let sql = `SELECT cahtting.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID,
+        let sql = `SELECT chatting.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID,
         if(account.id = ? ,'T','F') AS isMe
         FROM chatting 
         left JOIN member ON chatting.MemberID = member.MemberID 
