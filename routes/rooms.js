@@ -345,8 +345,19 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
         if(nicknameAndIsHead[0].isHead == 1) {
             let sql = `DELETE FROM room WHERE RoomID = ?`;
             let param = [roomId];
-            console.log(param);
+            // console.log(param);
             await db.executePreparedStatement(sql, param);
+            sql = `SELECT (NOW()) AS timestamp`;
+            let timestamp = await db.executePreparedStatement(sql, [])
+            res.get('io').to(roomId).emit('break', {
+                type: 'break',
+                content: "방장이 방을 삭제하였습니다.",
+                roomID: roomId,
+                nickname: "",
+                timestamp: timestamp[0].timestamp,
+                messageID: 0,
+                isMe: false
+            })
             res.status(200).json({
                 msg : "OK"
             })
