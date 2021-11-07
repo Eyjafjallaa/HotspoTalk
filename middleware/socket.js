@@ -37,8 +37,8 @@ module.exports.init=(io)=>{
                 // console.log(userId,data)
                 const row = await db.executePreparedStatement("SELECT member.NickName, member.MemberID from member left join account on account.AccountID = member.AccountID where RoomID =? and account.id=?",[data.roomId,userId]);
                 // console.log(row);
-                let sql="INSERT INTO chatting (content, RoomID, MemberID,Type) VALUES(?,?,?,?)"
-                let params=[data.content,data.roomId,row[0].MemberID,"msg"];
+                let sql="INSERT INTO chatting (content, RoomID, MemberID,Type,NickName) VALUES(?,?,?,?,?)"
+                let params=[data.content,data.roomId,row[0].MemberID,"msg",row[0].NickName];
                 // console.log(params)
                 const field= await db.executePreparedStatement(sql,params);
                 // console.log(field);
@@ -47,9 +47,10 @@ module.exports.init=(io)=>{
                     type:"msg",
                     content:data.content,
                     roomID:data.roomId,
-                    nickname:row[0],
+                    nickname:row[0].NickName,
                     timestamp:timestamp[0].timestamp,
-                    messageID:field.insertId
+                    messageID:field.insertId,
+                    isMe:false
                 })
 
 

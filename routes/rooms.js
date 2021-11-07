@@ -279,8 +279,8 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
         res.status(200).json({
             msg : "OK"
         })
-        sql = `INSERT INTO chatting(content, RoomID, MemberID, Type) VALUES('`+ nickname +` 님이 들어오셨습니다.',?,(SELECT member.MemberID FROM member join account ON account.AccountID = member.AccountID WHERE account.id = ? AND member.RoomID = ?),'in')`;
-        let feild = await db.executePreparedStatement(sql, [roomId, userId, roomId]);
+        sql = `INSERT INTO chatting(content, RoomID, MemberID, Type, NickName) VALUES('`+ nickname +` 님이 들어오셨습니다.',?,(SELECT member.MemberID FROM member join account ON account.AccountID = member.AccountID WHERE account.id = ? AND member.RoomID = ?),'in',?)`;
+        let feild = await db.executePreparedStatement(sql, [roomId, userId, roomId,nickname]);
         sql = `SELECT * FROM chatting WHERE ChattingID = ?`;
         let result = await db.executePreparedStatement(sql, [feild.insertId]);
         
@@ -292,7 +292,8 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
             roomId:result[0].RoomID,
             nickname:nickname,
             timestamp:result[0].Timestamp,
-            messageID:feild.insertId
+            messageID:feild.insertId,
+            isMe:false
         });
     } catch(e) {
         console.log(e);
@@ -351,8 +352,8 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             })
         } else {
             let content = nicknameAndIsHead[0].NickName + " 님이 나가셨습니다."
-            let sql = `INSERT INTO chatting(content, RoomID, MemberID, Type) VALUES(?,?,(SELECT member.MemberID FROM member join account ON account.AccountID = member.AccountID WHERE account.id = ? AND member.RoomID = ?),'leave')`;
-            let param = [content,roomId, userId, roomId];
+            let sql = `INSERT INTO chatting(content, RoomID, MemberID, Type, NickName) VALUES(?,?,(SELECT member.MemberID FROM member join account ON account.AccountID = member.AccountID WHERE account.id = ? AND member.RoomID = ?),'leave',(SELECT member.NickName FROM member join account ON account.AccountID = member.AccountID WHERE account.id = ? AND member.RoomID = ?))`;
+            let param = [content,roomId, userId, roomId, userId, roomId];
             let feild = await db.executePreparedStatement(sql, param);
             sql = `SELECT chatting.content, chatting.RoomID, chatting.Timestamp, member.nickname FROM chatting join member on member.MemberID = chatting.MemberID WHERE ChattingID = ?`;
             let result = await db.executePreparedStatement(sql, [feild.insertId]);
@@ -367,7 +368,8 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
                 roomId:result[0].RoomID,
                 nickname:result[0].nickname,
                 timestamp:result[0].Timestamp,
-                messageID:feild.insertId
+                messageID:feild.insertId,
+                isMe:false
             });
             res.status(200).json({
                 msg : "OK"
