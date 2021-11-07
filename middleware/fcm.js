@@ -40,7 +40,7 @@ exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
         token: target_tokens,
     }
     console.log(data);
-    admin.messaging().sendMulticast(message)
+    admin.messaging().sendMulticast(data)
     .then((response) => {
     if (response.failureCount > 0) {
       const failedTokens = [];
