@@ -349,7 +349,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             await db.executePreparedStatement(sql, param);
             sql = `SELECT (NOW()) AS timestamp`;
             let timestamp = await db.executePreparedStatement(sql, [])
-            res.get('io').to(roomId).emit('break', {
+            res.get('io').to(roomId).emit('message', {
                 type: 'break',
                 content: "방장이 방을 삭제하였습니다.",
                 roomID: roomId,
