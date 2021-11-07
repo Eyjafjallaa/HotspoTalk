@@ -240,6 +240,7 @@ router.post('/', decode, async(req, res) => {
 })
 
 router.post('/in/:roomid', decode, async(req, res) => { //방 입장
+    // console.log(req.app.get('io').to);
     try {
         let roomId = req.params.roomid;
         let userId = req.token.sub;
@@ -285,7 +286,7 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
         let result = await db.executePreparedStatement(sql, [feild.insertId]);
         
         // insert 해서 chatting에 메세지 남기고 그다음 밑에 io에 보내기
-        
+        console.log(typeof(roomId));
         req.app.get('io').to(roomId).emit('message',{
             type:"in",
             content:result[0].content,
@@ -295,6 +296,8 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
             messageID:feild.insertId,
             isMe:false
         });
+        console.log(roomId);
+        req.app.get('io').join(roomId);
     } catch(e) {
         console.log(e);
         res.status(400).json({

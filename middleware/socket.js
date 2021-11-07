@@ -9,7 +9,7 @@ const socketTokendecode = require('../middleware/socketToken');
 
 module.exports.init=(io)=>{
     console.log('Init socket.io');
-
+    // console.log(io.to);
     io.on('connection',(socket)=>{
         console.log('connected');
         io.emit('test', JSON.stringify({msg:'Hello'}))
@@ -53,9 +53,9 @@ module.exports.init=(io)=>{
                     messageID:field.insertId,
                     isMe:false
                 })
+               
 
-
-                await fcm.send("HotspoTalk 메시지", data.content, data.roomId, timestamp[0].timestamp, field.insertId, userId);
+                // await fcm.send("HotspoTalk 메시지", data.content, data.roomId, timestamp[0].timestamp, field.insertId, userId);
 
             } catch (error) {
                 console.log('socket')
@@ -71,7 +71,8 @@ module.exports.init=(io)=>{
         })
 
         socket.on('in',async(data)=>{
-            socket.join(data.roomID)
+            console.log(data);
+            socket.join(data)
             /*
             roomID=>
             userlist, message
