@@ -286,7 +286,7 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
         
         // insert 해서 chatting에 메세지 남기고 그다음 밑에 io에 보내기
         
-        res.app.get('io').to(roomId).emit('message',{
+        req.app.get('io').to(roomId).emit('message',{
             type:"in",
             content:result[0].content,
             roomId:result[0].RoomID,
@@ -361,8 +361,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             sql = `DELETE FROM member WHERE AccountID = (SELECT AccountID FROM account WHERE id = ?) AND RoomID = ?`;
             param = [userId, roomId];
             await db.executePreparedStatement(sql, param);
-            
-            res.app.get('io').to(roomId).emit('message',{
+            req.app.get('io').to(roomId).emit('message',{
                 type:"out",
                 content:result[0].content,
                 roomId:result[0].RoomID,
@@ -426,13 +425,13 @@ router.put('/:roomid/inherit', decode, async(req, res) => {
         res.status(200).json({
             msg : "OK"
         })
-        res.app.get('io').to(roomId).emit('message',{
+        req.app.get('io').to(roomId).emit('message',{
             type:"leave",
             content:result[0].content,
             roomId:result[0].RoomID,
             nickname:nickname,
             timestamp:result[0].Timestamp,
-            messageID:feild.insertId
+            messageID:field.insertId
         });
     } catch(e) {
         res.status(400).json({
