@@ -40,13 +40,16 @@ exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
         token: target_tokens,
     }
     console.log(data);
-    admin
-    .messaging()
-    .sendMulticast(data)
-    .then(function (response) {
-        console.log('Successfully sent message: : ', response)
-    })
-    .catch(function (err) {
-        console.log('Error Sending message!!! : ', err)
-    });
+    admin.messaging().sendMulticast(message)
+    .then((response) => {
+    if (response.failureCount > 0) {
+      const failedTokens = [];
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          failedTokens.push(registrationTokens[idx]);
+        }
+      });
+      console.log('List of tokens that caused failures: ' + failedTokens);
+    }
+  });
 }
