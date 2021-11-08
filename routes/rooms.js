@@ -377,7 +377,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             req.app.get('io').to(parseInt(roomId)).emit('message', {
                 type: 'break',
                 content: "방장이 방을 삭제하였습니다.",
-                roomID: roomId,
+                roomID: parseInt(roomId),
                 nickname: "",
                 timestamp: timestamp[0].timestamp,
                 messageID: 0,
