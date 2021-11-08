@@ -168,6 +168,9 @@ router.get("/", decode, async (req, res) => {
             if(a.existPW == "T") {
                 existPW = true;
             }
+            if(a.RoomID == null) {
+                continue;
+            }
             result.push({
               roomID: a.RoomID,
               roomName: a.RoomName,
