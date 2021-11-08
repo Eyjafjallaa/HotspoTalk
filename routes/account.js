@@ -27,8 +27,8 @@ router.post('/signup', async (req, res, next)=> {
             crypto.pbkdf2(req.body.password,salt,256,64,"sha512",async (err,key)=>{
                 if(err) reject(err);
                 try {
-                    await db.executePreparedStatement("INSERT INTO account(id, password, Devtoken,salt) values(?, ?, ?, ?)",
-                    [req.body.id, key.toString('base64'), req.body.devToken, salt]);
+                    await db.executePreparedStatement("INSERT INTO account(id, password,salt) values(?, ?, ?)",
+                    [req.body.id, key.toString('base64'), salt]);
                 } catch (error) {
                     reject(error);   
                 }
