@@ -44,7 +44,7 @@ module.exports.init=(io)=>{
                 // console.log(field);
                 const timestamp = await db.executePreparedStatement("select Timestamp FROM chatting WHERE ChattingID = ?",[field.insertId])
                 // console.log(timestamp);
-                socket.broadcast.to(data.RoomID).emit('message',{
+                socket.broadcast.to(data.roomId).emit('message',{
                     type:"msg",
                     content:data.content,
                     roomID:data.roomId,

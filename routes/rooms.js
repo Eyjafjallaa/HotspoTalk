@@ -142,12 +142,12 @@ router.get("/", decode, async (req, res) => {
         result.msg = "OK";
         for (i in apiResult) {
             sql += `SELECT room.RoomID, room.RoomName, room.MemberLimit, room.Address ,room.AreaType,
-            if(room.RoomPW<>'','T','F') AS existPW, room.MemberLimit, COUNT(Member.MemberID) As memberCount
+            if(room.RoomPW<>'','T','F') AS existPW, room.MemberLimit, 
+            COUNT(Member.MemberID) As memberCount
             FROM room LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             left join account on account.AccountID=member.AccountID
             WHERE address like ?
             and member.RoomID <> ALL(select RoomID from hotsix.member WHERE Account.id = ?)
-            and room.RoomID<>null
             union `;
         }
         //[
