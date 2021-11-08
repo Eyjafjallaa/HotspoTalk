@@ -262,7 +262,6 @@ router.post('/', decode, async(req, res) => {
 })
 
 router.post('/in/:roomid', decode, async(req, res) => { //방 입장
-    // console.log(req.app.get('io').to);
     try {
         let roomId = req.params.roomid;
         let userId = req.token.sub;
@@ -318,7 +317,6 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
             messageID:feild.insertId,
             isMe:false
         });
-        // req.app.get('io').join(roomId);
     } catch(e) {
         console.log(e);
         res.status(400).json({
@@ -373,7 +371,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             await db.executePreparedStatement(sql, param);
             sql = `SELECT (NOW()) AS timestamp`;
             let timestamp = await db.executePreparedStatement(sql, [])
-            req.app.get('io').to(roomId).emit('message', {
+            req.app.get('io').to(parseInt(roomId)).emit('message', {
                 type: 'break',
                 content: "방장이 방을 삭제하였습니다.",
                 roomID: roomId,
@@ -460,7 +458,7 @@ router.put('/:roomid/inherit', decode, async(req, res) => {
         res.status(200).json({
             msg : "OK"
         })
-        req.app.get('io').to(roomId).emit('message',{
+        req.app.get('io').to(parseInt(roomId)).emit('message',{
             type:"leave",
             content:result[0].content,
             roomId:result[0].RoomID,
