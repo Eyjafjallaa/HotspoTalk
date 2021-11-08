@@ -16,13 +16,18 @@ router.get("/", decode, async (req, res) => {
   if (Object.keys(req.query).length === 0 && req.query.constructor === Object) {
     //파라미터가 없을 경우 -> 들어갔던 방
     try {
-      let sql = `SELECT room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, member.IsHead,
-                if(room.RoomPW<>'','T','F') AS existPW
-                FROM account
-                join member join room 
-                ON account.AccountID = member.AccountID 
-                AND room.RoomID = member.roomID 
-                WHERE account.id = ?;`;
+        let sql = `SELECT distinct room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, 
+        member.IsHead,
+        if(room.RoomPW<>'','T','F') AS existPW, 
+        chatting.content as lastChatting
+        FROM account
+        left join member on account.AccountID = member.AccountID 
+        left join room on member.RoomID = Room.RoomID
+        left join chatting on room.RoomID = chatting.RoomID
+        WHERE account.AccountId = 14
+        AND chatting.ChattingID = (select MAX(chatting.ChattingID) from chatting)
+        group by RoomID;
+      `;
       let param = [userId];
 
       let result = await db.executePreparedStatement(sql, param);
@@ -44,7 +49,8 @@ router.get("/", decode, async (req, res) => {
               areaType: result[i].AreaType,
               address: result[i].Address,
               isHead: result[i].IsHead,
-              existPW: existPW
+              lastChatting: result[i].lastChatting,
+              existPW: existPW,
             });
           } else {
             if(result[i].existPW == 'T') {
@@ -57,7 +63,8 @@ router.get("/", decode, async (req, res) => {
               areaType: result[i].AreaType,
               roomRange: result[i].AreaDetail,
               isHead: result[i].IsHead,
-              existPW: existPW
+              lastChatting: result[i].lastChatting,
+              existPW: existPW,
             });
           }
         }
@@ -69,7 +76,7 @@ router.get("/", decode, async (req, res) => {
         msg: e,
       });
     }
-  } else {
+  } else {//들어가지 않은 방
     try {
       let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
       let area = await db.executePreparedStatement(sql);
@@ -352,7 +359,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             await db.executePreparedStatement(sql, param);
             sql = `SELECT (NOW()) AS timestamp`;
             let timestamp = await db.executePreparedStatement(sql, [])
-            res.get('io').to(roomId).emit('message', {
+            req.app.get('io').to(roomId).emit('message', {
                 type: 'break',
                 content: "방장이 방을 삭제하였습니다.",
                 roomID: roomId,
