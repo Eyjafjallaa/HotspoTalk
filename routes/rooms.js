@@ -222,8 +222,9 @@ router.post('/', decode, async(req, res) => {
             param = [1,roomId, accountId, body.nickName];
             var c=await db.executePreparedStatement(sql, param);
             console.log(roomId);
+            //
             await db.executePreparedStatement("INSERT INTO chatting(content, RoomID, MemberID,Type,NickName) VALUES(?,?,?,?,?)",
-            ["님이 들어오셨습니다.",roomId,c.insertId,'in',body.nickName]);
+            [body.nickName + "님이 들어오셨습니다.",roomId,c.insertId,'in',body.nickName]);
             
             res.status(201).json({
                 msg : "OK"
@@ -242,8 +243,9 @@ router.post('/', decode, async(req, res) => {
             param = [1,roomId.insertId, accountId, body.nickName];
             let c =await db.executePreparedStatement(sql, param);
 
+            //
             await db.executePreparedStatement("INSERT INTO chatting(content, RoomID, MemberID,Type,NickName) VALUES(?,?,?,?,?)",
-            ["님이 들어오셨습니다.",roomId.insertId,c.insertId,'in',body.nickName]);
+            [body.nickName + "님이 들어오셨습니다.",roomId.insertId,c.insertId,'in',body.nickName]);
             res.status(201).json({
                 msg : "OK"
             });
