@@ -25,8 +25,8 @@ router.get("/", decode, async (req, res) => {
         left join room on member.RoomID = Room.RoomID
         left join chatting on room.RoomID = chatting.RoomID
         WHERE account.Id = ?
-        group by RoomID
-        having max(room.RoomID)= room.RoomId;
+        AND (ChattingID)IN (SELECT max(ChattingID) from chatting group by RoomID)
+        group by RoomID;
       `;
       let param = [userId];
       let result = await db.executePreparedStatement(sql, param);
@@ -396,7 +396,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             sql = `DELETE FROM member WHERE AccountID = (SELECT AccountID FROM account WHERE id = ?) AND RoomID = ?`;
             param = [userId, roomId];
             await db.executePreparedStatement(sql, param);
-            req.app.get('io').to(roomId).emit('message',{
+            req.app.get('io').to(parseInt(roomId)).emit('message',{
                 type:"out",
                 content:result[0].content,
                 roomId:result[0].RoomID,
