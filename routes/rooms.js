@@ -314,7 +314,7 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
         req.app.get('io').to(parseInt(roomId)).emit('message',{
             type:"in",
             content:result[0].content,
-            roomId:parseInt(roomId),
+            roomID:parseInt(roomId),
             nickname:nickname,
             timestamp:result[0].Timestamp,
             messageID:feild.insertId,
@@ -400,7 +400,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             req.app.get('io').to(parseInt(roomId)).emit('message',{
                 type:"out",
                 content:result[0].content,
-                roomId:parseInt(roomId),
+                roomID:parseInt(roomId),
                 nickname:result[0].nickname,
                 timestamp:result[0].Timestamp,
                 messageID:feild.insertId,
