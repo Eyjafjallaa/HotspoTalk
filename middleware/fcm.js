@@ -37,7 +37,7 @@ exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
             body: message,
         },
         data : {messageData},
-        token: target_tokens,
+        tokens: target_tokens,
     }
     console.log(data);
     admin.messaging().sendMulticast(data)

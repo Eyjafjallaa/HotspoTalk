@@ -126,43 +126,44 @@ router.get("/", decode, async (req, res) => {
             existPW: existPW,
           });
         }
-      }
-      if (result.length != 0) {
+    }
+    if (result.length != 0) {
         result = [...new Set(result.map(JSON.stringify))].map(JSON.parse);
-      }
-      let apiResult = await naver.get(latitude, longitude);
-      if(!apiResult) {
+    }
+    let apiResult = await naver.get(latitude, longitude);
+    if(!apiResult) {
         if(result.length == 0) {
             res.status(200).json([]);
             return;
         }
-      } else {
-          sql = "";
-          result.data = result;
-          result.msg = "OK";
-          for (i in apiResult) {
+    } else {
+        sql = "";
+        result.data = result;
+        result.msg = "OK";
+        for (i in apiResult) {
             sql += `SELECT room.RoomID, room.RoomName, room.MemberLimit, room.Address ,room.AreaType,
-            if(room.RoomPW<>'','T','F') AS existPW, room.MemberLimit, COUNT(Member.MemberID) As memberCount
+            if(room.RoomPW<>'','T','F') AS existPW, room.MemberLimit, COUNT(distinct Member.MemberID) As memberCount
             FROM room LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             left join account on account.AccountID=member.AccountID
             WHERE address like ?
             and member.RoomID <> ALL(select RoomID from hotsix.member WHERE Account.id = ?)
             and room.RoomID<>null
             union `;
-          }
-          //[
-          //api result 1, token.sub, api result 2, token.sub ... ...
-          //]
-          sql = sql.substring(0, sql.length - 6);
-          sql += "group by room.RoomID"
-          let param = [];
-          for(i of apiResult) {
-            param.push(i);
-            param.push(userId);
-          }
-        //   console.log(param)
-          let result2 = await db.executePreparedStatement(sql, param);
-          for (a of result2) {
+        }
+        //[
+            //api result 1, token.sub, api result 2, token.sub ... ...
+            //]
+            sql = sql.substring(0, sql.length - 6);
+            sql += "group by room.RoomID"
+            let param = [];
+            for(i of apiResult) {
+                param.push(i);
+                param.push(userId);
+            }
+            //   console.log(param)
+            let result2 = await db.executePreparedStatement(sql, param);
+            console.log(result2);
+            for (a of result2) {
             let existPW = false;
             if(a.existPW == "T") {
                 existPW = true;
