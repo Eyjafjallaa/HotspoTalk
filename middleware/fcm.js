@@ -32,6 +32,9 @@ exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
     })
     let data = { //넣어야할 내용 : 시간 보낸사람 내용 방번호
         name : messageID.toString,
+        android : {
+          priority : 'high'
+        },
         notification: {
             title: title,
             body:  nickname[0].NickName + " : "+ message,
