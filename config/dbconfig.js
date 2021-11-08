@@ -5,6 +5,7 @@ var pool = {
     password:'1234',
     database : 'hotsix',
     connectionLimit : 20,
+    dateStrings: 'date',
     queueLimit: 0,
 };
 
