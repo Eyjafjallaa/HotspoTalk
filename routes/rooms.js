@@ -17,19 +17,18 @@ router.get("/", decode, async (req, res) => {
     //파라미터가 없을 경우 -> 들어갔던 방
     try {
         let sql = `SELECT distinct room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, 
-        member.IsHead,
+        member.IsHead,Count(Member.MemberID) as memberCount,
         if(room.RoomPW<>'','T','F') AS existPW, 
         chatting.content as lastChatting
         FROM account
         left join member on account.AccountID = member.AccountID 
         left join room on member.RoomID = Room.RoomID
         left join chatting on room.RoomID = chatting.RoomID
-        WHERE account.AccountId = 14
-        AND chatting.ChattingID = (select MAX(chatting.ChattingID) from chatting)
-        group by RoomID;
+        WHERE account.Id = ?
+        group by RoomID
+        having max(room.RoomID)= room.RoomId;
       `;
       let param = [userId];
-
       let result = await db.executePreparedStatement(sql, param);
 
       if (result.length == 0) {
@@ -51,6 +50,8 @@ router.get("/", decode, async (req, res) => {
               isHead: result[i].IsHead,
               lastChatting: result[i].lastChatting,
               existPW: existPW,
+              memberLimit:result[i].MemberLimit,
+              memberCount:result[i].memberCount
             });
           } else {
             if(result[i].existPW == 'T') {
@@ -65,6 +66,8 @@ router.get("/", decode, async (req, res) => {
               isHead: result[i].IsHead,
               lastChatting: result[i].lastChatting,
               existPW: existPW,
+              memberLimit:result[i].MemberLimit,
+              memberCount:result[i].memberCount
             });
           }
         }
@@ -96,7 +99,7 @@ router.get("/", decode, async (req, res) => {
           req.token.sub
         ];
         sql = `SELECT distinct room.RoomID, room.RoomName, room.MemberLimit, room.AreaDetail, room.AreaType,
-            if(room.RoomPW<>'','T','F') AS existPW
+            if(room.RoomPW<>'','T','F') AS existPW, room.MemberLimit, COUNT(Member.MemberID) As memberCount
             FROM hotsix.room 
             LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             WHERE 
@@ -116,9 +119,10 @@ router.get("/", decode, async (req, res) => {
             roomID: rs[a].RoomID,
             roomName: rs[a].RoomName,
             memberLimit: rs[a].MemberLimit,
+            memberCount:rs[a].memberCount,
             roomRange: rs[a].AreaDetail,
             areaType: rs[a].AreaType,
-            existPW: existPW
+            existPW: existPW,
           });
         }
       }
@@ -137,7 +141,7 @@ router.get("/", decode, async (req, res) => {
           result.msg = "OK";
           for (i in apiResult) {
             sql += `SELECT room.RoomID, room.RoomName, room.MemberLimit, room.Address ,room.AreaType,
-            if(room.RoomPW<>'','T','F') AS existPW  
+            if(room.RoomPW<>'','T','F') AS existPW, room.MemberLimit, COUNT(Member.MemberID) As memberCount
             FROM room LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             left join account on account.AccountID=member.AccountID
             WHERE address like ?
@@ -166,9 +170,10 @@ router.get("/", decode, async (req, res) => {
               roomID: a.RoomID,
               roomName: a.RoomName,
               memberLimit: a.MemberLimit,
+              memberCount:a.memberCount,
               address: a.Address,
               areaType: a.AreaType,
-              existPW: existPW
+              existPW: existPW,
             });
           }
           if (result.length == 0) {
@@ -193,7 +198,7 @@ router.get("/", decode, async (req, res) => {
 //longitude 경도 latitude 위도   areaType : 0 반경 1 주소 areaDetail : type이 0일때는 m / 1일 떄는 0이면 동 1이면 상위
 //35.664753, 128.422895
 router.post('/', decode, async(req, res) => {
-    console.log(req.body);
+    // console.log(req.body);
     if(req.body.password==undefined){
         req.body.password="";
     }
@@ -207,15 +212,18 @@ router.post('/', decode, async(req, res) => {
                 if(param[x]==undefined)
                     param[x] = ""; 
             }
-            const roomId = await db.executePreparedStatement(sql, param);
-            
+            let roomId = await db.executePreparedStatement(sql, param);
+            roomId=roomId.insertId
             sql = "SELECT AccountID FROM account WHERE id = ?;"
             let accountId = await db.executePreparedStatement(sql, [userId]);
             accountId = accountId[0].AccountID
             
             sql = "INSERT INTO member(IsHead, RoomID, AccountID, NickName) values(?,?,?,?);";
-            param = [1,roomId.insertId, accountId, body.nickName];
-            await db.executePreparedStatement(sql, param);
+            param = [1,roomId, accountId, body.nickName];
+            var c=await db.executePreparedStatement(sql, param);
+            console.log(roomId);
+            await db.executePreparedStatement("INSERT INTO chatting(content, RoomID, MemberID,Type,NickName) VALUES(?,?,?,?,?)",
+            ["님이 들어오셨습니다.",roomId,c.insertId,'in',body.nickName]);
             
             res.status(201).json({
                 msg : "OK"
@@ -232,8 +240,10 @@ router.post('/', decode, async(req, res) => {
             
             sql = "INSERT INTO member(IsHead, RoomID, AccountID, NickName) values(?,?,?,?);";
             param = [1,roomId.insertId, accountId, body.nickName];
-            await db.executePreparedStatement(sql, param);
-            
+            let c =await db.executePreparedStatement(sql, param);
+
+            await db.executePreparedStatement("INSERT INTO chatting(content, RoomID, MemberID,Type,NickName) VALUES(?,?,?,?,?)",
+            ["님이 들어오셨습니다.",roomId.insertId,c.insertId,'in',body.nickName]);
             res.status(201).json({
                 msg : "OK"
             });
@@ -303,7 +313,7 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
             messageID:feild.insertId,
             isMe:false
         });
-        req.app.get('io').join(roomId);
+        // req.app.get('io').join(roomId);
     } catch(e) {
         console.log(e);
         res.status(400).json({
