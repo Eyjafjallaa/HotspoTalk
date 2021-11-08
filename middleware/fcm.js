@@ -1,13 +1,13 @@
 const admin = require('firebase-admin')
 var db = require('../model/db');
+let serAccount = require('../config/hotspotalk-firebase-adminsdk-2ejcn-483aca231a.json');
 
 
-//userId, 방번호
-//방번호에 있는 userId로 deviceToken 얻기
-
+admin.initializeApp({
+  credential: admin.credential.cert(serAccount),
+})
 
 exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
-
     let sql = "SELECT Devtoken FROM member JOIN account ON member.AccountID = account.AccountID WHERE RoomID = ? AND account.id <> ?;";
     let param = [roomId, userId];
     console.log(param)
@@ -49,7 +49,7 @@ exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
           failedTokens.push(registrationTokens[idx]);
         }
       });
-      console.log('List of tokens that caused failures: ' + failedTokens);
+      console.log('실패한 디바이스 토큰: ' + failedTokens);
     }
   });
 }

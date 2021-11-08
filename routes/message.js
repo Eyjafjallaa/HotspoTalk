@@ -5,9 +5,9 @@ const admin = require('firebase-admin')
 
 let serAccount = require('../config/hotspotalk-firebase-adminsdk-2ejcn-483aca231a.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serAccount),
-})
+// admin.initializeApp({
+//   credential: admin.credential.cert(serAccount),
+// })
 
 router.get('/', (req, res) => {
     console.log("sadfa");
