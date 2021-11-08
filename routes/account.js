@@ -137,16 +137,21 @@ router.delete('/ban', (req, res, next) => {
 
 
 router.put('/device', decode, async(req, res) => {
-  let deviceToken = req.body.deviceToken;
-  let id = req.token.sub;
-  let sql = "UPDATE account SET DevToken = ? WHERE id = ?";
-  let param = [deviceToken, id];
-
-  await db.executePreparedStatement(sql, param);
-
-  res.status(201).json({
-    msg : "OK"
-  })
+  try {
+    let deviceToken = req.body.deviceToken;
+    let id = req.token.sub;
+    let sql = "UPDATE account SET DevToken = ? WHERE id = ?";
+    let param = [deviceToken, id];
+  
+    await db.executePreparedStatement(sql, param);
+    res.status(201).json({
+      msg : "OK"
+    })
+  } catch (e) {
+    res.status(400).json({
+      msg : e
+    })
+  }
 })
 
 router.post('/autoLogin', decode, async(req, res) => {
