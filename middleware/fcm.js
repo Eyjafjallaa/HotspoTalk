@@ -49,7 +49,7 @@ exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
       const failedTokens = [];
       response.responses.forEach((resp, idx) => {
         if (!resp.success) {
-          failedTokens.push(registrationTokens[idx]);
+          failedTokens.push(target_tokens[idx]);
         }
       });
       console.log('실패한 디바이스 토큰: ' + failedTokens);
