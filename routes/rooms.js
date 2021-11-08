@@ -22,7 +22,7 @@ router.get("/", decode, async (req, res) => {
         chatting.content as lastChatting
         FROM account
         left join member on account.AccountID = member.AccountID 
-        left join room on member.RoomID = Room.RoomID
+        left join room on member.RoomID = room.RoomID
         left join chatting on room.RoomID = chatting.RoomID
         WHERE account.Id = ?
         AND (ChattingID)IN (SELECT max(ChattingID) from chatting group by RoomID)
@@ -101,7 +101,7 @@ router.get("/", decode, async (req, res) => {
           req.token.sub
         ];
         sql = `SELECT distinct room.RoomID, room.RoomName, room.MemberLimit, room.AreaDetail, room.AreaType,
-            if(room.RoomPW<>'','T','F') AS existPW, room.MemberLimit, COUNT(Member.MemberID) As memberCount
+            if(room.RoomPW<>'','T','F') AS existPW, room.MemberLimit, COUNT(member.MemberID) As memberCount
             FROM hotsix.room 
             LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             WHERE 
@@ -144,11 +144,11 @@ router.get("/", decode, async (req, res) => {
         for (i in apiResult) {
             sql += `SELECT room.RoomID, room.RoomName, room.MemberLimit, room.Address ,room.AreaType,
             if(room.RoomPW<>'','T','F') AS existPW, room.MemberLimit, 
-            COUNT(Member.MemberID) As memberCount
+            COUNT(member.MemberID) As memberCount
             FROM room LEFT JOIN hotsix.member ON room.RoomID = member.RoomID
             left join account on account.AccountID=member.AccountID
             WHERE address like ?
-            and member.RoomID <> ALL(select RoomID from hotsix.member WHERE Account.id = ?)
+            and member.RoomID <> ALL(select RoomID from hotsix.member WHERE account.id = ?)
             union `;
         }
         //[
@@ -548,7 +548,7 @@ router.get('/:roomId', decode,async(req, res) => {
         const roomId = req.params.roomId;
         const {start, count} = req.query;
         
-        let sql = `SELECT chatting.NickName, chatting.content, chatting.Timestamp,chatting.Type,chatting.ChattingID,
+        let sql = `SELECT chatting.NickName, chatting.content, chatting.Timestamp, chatting.Type, chatting.ChattingID,
         if(account.id = ? ,'T','F') AS isMe
         FROM chatting 
         left JOIN member ON chatting.MemberID = member.MemberID 
