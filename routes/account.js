@@ -137,10 +137,10 @@ router.delete('/ban', (req, res, next) => {
 
 
 router.put('/device', decode, async(req, res) => {
-  let devieceToken = req.body.deviceToken;
+  let deviceToken = req.body.deviceToken;
   let id = req.token.sub;
   let sql = "UPDATE account SET DevToken = ? WHERE id = ?";
-  let param = [devieceToken, id];
+  let param = [deviceToken, id];
 
   await db.executePreparedStatement(sql, param);
 
