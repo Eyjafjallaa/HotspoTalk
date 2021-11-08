@@ -311,7 +311,7 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
         req.app.get('io').to(parseInt(roomId)).emit('message',{
             type:"in",
             content:result[0].content,
-            roomId:result[0].RoomID,
+            roomId:parseInt(roomId),
             nickname:nickname,
             timestamp:result[0].Timestamp,
             messageID:feild.insertId,
