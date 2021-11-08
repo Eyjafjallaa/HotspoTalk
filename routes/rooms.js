@@ -26,7 +26,8 @@ router.get("/", decode, async (req, res) => {
         left join chatting on room.RoomID = chatting.RoomID
         WHERE account.Id = ?
         AND (ChattingID)IN (SELECT max(ChattingID) from chatting group by RoomID)
-        group by RoomID;
+        group by RoomID
+        ORDER BY chatting.ChattingID desc;
       `;
       let param = [userId];
       let result = await db.executePreparedStatement(sql, param);
