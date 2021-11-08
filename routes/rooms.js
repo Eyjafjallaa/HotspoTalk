@@ -17,7 +17,7 @@ router.get("/", decode, async (req, res) => {
     //파라미터가 없을 경우 -> 들어갔던 방
     try {
         let sql = `SELECT distinct room.RoomID, room.RoomName, room.RoomPW, room.AreaDetail, room.MemberLimit, room.Address, room.AreaType, 
-        member.IsHead,Count(Member.MemberID) as memberCount,
+        member.IsHead,Count(member.MemberID) as memberCount,
         if(room.RoomPW<>'','T','F') AS existPW, 
         chatting.content as lastChatting
         FROM account
