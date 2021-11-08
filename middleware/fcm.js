@@ -34,7 +34,7 @@ exports.send = async(title, message, roomId, timestamp, messageID, userId) => {
         name : messageID.toString,
         notification: {
             title: title,
-            body: message,
+            body:  nickname[0].NickName + " : "+ message,
         },
         data : {messageData},
         tokens: target_tokens,
