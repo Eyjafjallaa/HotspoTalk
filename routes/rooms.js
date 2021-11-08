@@ -397,7 +397,7 @@ router.delete('/:roomid/exit', decode, async(req, res) => { //퇴장
             req.app.get('io').to(parseInt(roomId)).emit('message',{
                 type:"out",
                 content:result[0].content,
-                roomId:result[0].RoomID,
+                roomId:parseInt(roomId),
                 nickname:result[0].nickname,
                 timestamp:result[0].Timestamp,
                 messageID:feild.insertId,
@@ -458,14 +458,15 @@ router.put('/:roomid/inherit', decode, async(req, res) => {
         res.status(200).json({
             msg : "OK"
         })
-        req.app.get('io').to(parseInt(roomId)).emit('message',{
-            type:"leave",
-            content:result[0].content,
-            roomId:result[0].RoomID,
-            nickname:nickname,
-            timestamp:result[0].Timestamp,
-            messageID:field.insertId
-        });
+       //상속 나중에 소켓
+        // req.app.get('io').to(parseInt(roomId)).emit('message',{
+        //     type:"leave",
+        //     content:result[0].content,
+        //     roomId:parseInt(roomId),
+        //     nickname:nickname,
+        //     timestamp:result[0].Timestamp,
+        //     messageID:field.insertId
+        // });
     } catch(e) {
         res.status(400).json({
             msg : e
