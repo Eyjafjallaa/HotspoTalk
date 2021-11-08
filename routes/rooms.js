@@ -309,7 +309,7 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
         
         // insert 해서 chatting에 메세지 남기고 그다음 밑에 io에 보내기
         console.log(typeof(roomId),roomId);
-        req.app.get('io').to(roomId).emit('message',{
+        req.app.get('io').to(parseInt(roomId)).emit('message',{
             type:"in",
             content:result[0].content,
             roomId:result[0].RoomID,
