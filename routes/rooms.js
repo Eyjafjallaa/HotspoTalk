@@ -79,7 +79,8 @@ router.get("/", decode, async (req, res) => {
         msg: e,
       });
     }
-  } else {//들어가지 않은 방
+  } 
+  else {//들어가지 않은 방
     try {
       let sql = "SELECT distinct AreaDetail FROM hotsix.room;";
       let area = await db.executePreparedStatement(sql);
@@ -146,6 +147,7 @@ router.get("/", decode, async (req, res) => {
             left join account on account.AccountID=member.AccountID
             WHERE address like ?
             and member.RoomID <> ALL(select RoomID from hotsix.member WHERE Account.id = ?)
+            and room.RoomID<>null
             union `;
           }
           //[
@@ -160,7 +162,6 @@ router.get("/", decode, async (req, res) => {
           }
         //   console.log(param)
           let result2 = await db.executePreparedStatement(sql, param);
-    
           for (a of result2) {
             let existPW = false;
             if(a.existPW == "T") {
@@ -176,6 +177,7 @@ router.get("/", decode, async (req, res) => {
               existPW: existPW,
             });
           }
+        //   console.log(result);
           if (result.length == 0) {
               resData = [];
           }
@@ -235,7 +237,7 @@ router.post('/', decode, async(req, res) => {
             const roomId = await db.executePreparedStatement(sql, param);
             
             sql = "SELECT AccountID FROM account WHERE id = ?;"
-            console.log(userId);
+            // console.log(userId);
             let accountId = await db.executePreparedStatement(sql, [userId]);
             accountId = accountId[0].AccountID
             
@@ -264,7 +266,7 @@ router.post('/in/:roomid', decode, async(req, res) => { //방 입장
         let roomId = req.params.roomid;
         let userId = req.token.sub;
         let { nickname, password } = req.body;
-        console.log(req.body);
+        // console.log(req.body);
         await isBaned.check(roomId, userId);
 
         let sql = `SELECT count(*) as able FROM room WHERE RoomID = ? AND MemberLimit > (SELECT count(*) FROM member WHERE RoomID = ?);`;
