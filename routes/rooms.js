@@ -542,9 +542,9 @@ router.put('/ban', decode, async(req, res) => {
     }
 })
 
-router.get('/:roomId', decode,async(req, res) => { //채팅 내역
+router.get('/:roomId', decode,async(req, res) => { //채팅 내역 current_datetime.getDate()
     const formatDate = (current_datetime)=>{
-        let formatted_date = current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate() + " " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
+        let formatted_date = current_datetime.getFullYear() + "-" + ('00' + (current_datetime.getMonth() + 1)).slice(-2) + "-" + ('00' + current_datetime.getDate()).slice(-2) + " " + ('00' + current_datetime.getHours()).slice(-2) + ":" + ('00' + current_datetime.getMinutes()).slice(-2) + ":" + ('00' + current_datetime.getSeconds()).slice(-2)
         return formatted_date;
     }
     try {
@@ -566,7 +566,6 @@ router.get('/:roomId', decode,async(req, res) => { //채팅 내역
 
         let result = await db.executePreparedStatement(sql, param);
 
-        // console.log(result);
         let arr = [];
         for(i of result) {
             let isMe = false;
@@ -576,7 +575,6 @@ router.get('/:roomId', decode,async(req, res) => { //채팅 내역
             let time = new Date(i.Timestamp);
             time.setHours(time.getHours() + 9);
             time = formatDate(time);
-            console.log(time);
             arr.push({
                 nickname : i.NickName,
                 content : i.content,
