@@ -531,7 +531,7 @@ router.put('/ban', decode, async(req, res) => {
         sql = `DELETE FROM member WHERE AccountID = (SELECT AccountId FROM account WHERE id = ?) AND RoomID = ?`;
         param = [accountId, roomId];
         await db.executePreparedStatement(sql, param);
-
+        
         res.status(201).json({
             msg : "OK"
         })
@@ -542,7 +542,11 @@ router.put('/ban', decode, async(req, res) => {
     }
 })
 
-router.get('/:roomId', decode,async(req, res) => {
+router.get('/:roomId', decode,async(req, res) => { //채팅 내역
+    const formatDate = (current_datetime)=>{
+        let formatted_date = current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate() + " " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
+        return formatted_date;
+    }
     try {
         const userID = req.token.sub;
         const roomId = req.params.roomId;
@@ -561,6 +565,7 @@ router.get('/:roomId', decode,async(req, res) => {
         // console.log(param)
 
         let result = await db.executePreparedStatement(sql, param);
+
         // console.log(result);
         let arr = [];
         for(i of result) {
@@ -568,10 +573,14 @@ router.get('/:roomId', decode,async(req, res) => {
             if(i.isMe == 'T') {
                 isMe = true;
             }
+            let time = new Date(i.Timestamp);
+            time.setHours(time.getHours() + 9);
+            time = formatDate(time);
+            console.log(time);
             arr.push({
                 nickname : i.NickName,
                 content : i.content,
-                timestamp : i.Timestamp,
+                timestamp : time,
                 type : i.Type,
                 messageID:i.ChattingID,
                 isMe : isMe
@@ -580,6 +589,7 @@ router.get('/:roomId', decode,async(req, res) => {
 
         res.status(200).json(arr);
     } catch (e) {
+        console.log(e)
         res.status(400).json({
             msg : e
         })
