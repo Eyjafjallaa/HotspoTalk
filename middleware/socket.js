@@ -73,6 +73,9 @@ module.exports.init=(io)=>{
         socket.on('in',async(data)=>{
             console.log(data);
             socket.leave(data)
+            socket.leave(data)
+            socket.leave(data)
+            socket.leave(data)
             socket.join(data)
             /*
             roomID=>
