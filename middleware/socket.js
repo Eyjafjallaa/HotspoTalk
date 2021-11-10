@@ -29,6 +29,7 @@ module.exports.init=(io)=>{
         
 
         socket.on('message',async (data)=>{
+            console.log(data);
             data = JSON.parse(data);
             console.log('message')
             console.log(data);
