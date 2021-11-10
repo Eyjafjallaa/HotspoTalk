@@ -184,6 +184,7 @@ router.get("/", decode, async (req, res) => {
           }
           console.log(resData);
           
+          resData = [];
           if (result.length == 0) {
               resData = [];
           }
