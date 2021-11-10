@@ -182,7 +182,8 @@ router.get("/", decode, async (req, res) => {
               existPW: existPW,
             });
           }
-        //   console.log(result);   
+          console.log(result);
+          
           if (result.length == 0) {
               resData = [];
           }
