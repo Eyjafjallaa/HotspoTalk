@@ -1,5 +1,5 @@
 var pool = {
-    host:'10.80.161.222',
+    host:'localhost',
     port:'3306',
     user:'hotspotalk',
     password:'1234',
