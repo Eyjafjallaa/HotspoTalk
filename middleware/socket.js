@@ -29,11 +29,12 @@ module.exports.init=(io)=>{
         
 
         socket.on('message',async (data)=>{
-            console.log(data);
+            // console.log(data);
             data = await JSON.parse(data);
-            console.log('message')
-            console.log(data);
-            console.log('message')
+            const formatDate = (current_datetime)=>{
+                let formatted_date = current_datetime.getFullYear() + "-" + ('00' + (current_datetime.getMonth() + 1)).slice(-2) + "-" + ('00' + current_datetime.getDate()).slice(-2) + " " + ('00' + current_datetime.getHours()).slice(-2) + ":" + ('00' + current_datetime.getMinutes()).slice(-2) + ":" + ('00' + current_datetime.getSeconds()).slice(-2)
+                return formatted_date;
+            }
             try {
                 //MEMBERID 토큰으로 바꿔서
                 const userId = await socketTokendecode(data.token);
@@ -47,12 +48,15 @@ module.exports.init=(io)=>{
                 // console.log(field);
                 const timestamp = await db.executePreparedStatement("select Timestamp FROM chatting WHERE ChattingID = ?",[field.insertId])
                 // console.log(timestamp);
+                let time = new Date(timestamp[0].Timestamp);
+                time.setHours(time.getHours() + 9);
+                time = formatDate(time);
                 socket.broadcast.to(data.roomId).emit('message',{
                     type:"msg",
                     content:data.content,
                     roomID:data.roomId,
                     nickname:row[0].NickName,
-                    timestamp:timestamp[0].Timestamp,
+                    timestamp:time,
                     messageID:field.insertId,
                     isMe:false
                 })
